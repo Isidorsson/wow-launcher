@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -8,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+
+	"wow-launcher/internal/events"
 )
 
 // baseFiles is the set of files copied from the user's source 3.3.5 install
@@ -49,7 +52,7 @@ var localeBaseFiles = []string{
 //
 // Fail-fast: returns on the first hard error so the user sees the real cause
 // rather than a wall of secondary failures.
-func MaterializeBase(baseInstall, profileRoot, locale string) error {
+func MaterializeBase(ctx context.Context, baseInstall, profileRoot, locale string) error {
 	if baseInstall == "" || profileRoot == "" || locale == "" {
 		return fmt.Errorf("baseInstall, profileRoot, locale all required")
 	}
@@ -60,7 +63,13 @@ func MaterializeBase(baseInstall, profileRoot, locale string) error {
 		all = append(all, strings.ReplaceAll(p, "{locale}", locale))
 	}
 
-	for _, rel := range all {
+	crossDrive := sameVolume(baseInstall, profileRoot) == false
+	if crossDrive {
+		events.Emit(ctx, events.StatusMessage,
+			"Base install on different drive — copying ~5GB. This is a one-time step and may take several minutes.")
+	}
+
+	for i, rel := range all {
 		src := filepath.Join(baseInstall, filepath.FromSlash(rel))
 		dst := filepath.Join(profileRoot, filepath.FromSlash(rel))
 
@@ -85,6 +94,9 @@ func MaterializeBase(baseInstall, profileRoot, locale string) error {
 			return fmt.Errorf("mkdir %s: %w", filepath.Dir(dst), err)
 		}
 
+		events.Emit(ctx, events.StatusMessage,
+			fmt.Sprintf("Preparing base files %d/%d — %s", i+1, len(all), filepath.Base(rel)))
+
 		if err := os.Link(src, dst); err == nil {
 			continue
 		} else if !isCrossDeviceErr(err) {
@@ -103,6 +115,18 @@ func MaterializeBase(baseInstall, profileRoot, locale string) error {
 		}
 	}
 	return nil
+}
+
+// sameVolume reports whether two paths live on the same Windows volume by
+// comparing their drive letters (case-insensitive). Falls back to true on
+// non-Windows or unparseable paths so we don't emit spurious warnings.
+func sameVolume(a, b string) bool {
+	va := filepath.VolumeName(a)
+	vb := filepath.VolumeName(b)
+	if va == "" || vb == "" {
+		return true
+	}
+	return strings.EqualFold(va, vb)
 }
 
 func copyFile(src, dst string) error {
@@ -134,10 +158,14 @@ func isCrossDeviceErr(err error) bool {
 	if errors.Is(err, syscall.EXDEV) {
 		return true
 	}
-	// Windows ERROR_NOT_SAME_DEVICE is 17 — but the wrapped error text is
-	// the most portable check across Go versions.
+	// Windows ERROR_NOT_SAME_DEVICE is 17. Go's syscall.EXDEV on Windows is
+	// 18, so errors.Is above misses it — match the errno directly too.
+	if errors.Is(err, syscall.Errno(17)) {
+		return true
+	}
 	s := strings.ToLower(err.Error())
 	return strings.Contains(s, "different drive") ||
+		strings.Contains(s, "different disk drive") ||
 		strings.Contains(s, "not same device") ||
 		strings.Contains(s, "cross-device")
 }

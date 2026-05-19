@@ -14,11 +14,13 @@
   import PlayStrip from './lib/PlayStrip.svelte';
   import Settings from './lib/Settings.svelte';
 
-  let launcherName = 'WoW Launcher';
-  let settingsOpen = false;
-  let profileExists = false;
+  let launcherName = $state('WoW Launcher');
+  let settingsOpen = $state(false);
+  let profileExists = $state(false);
 
-  $: if ($selectedServerId) refreshProfile();
+  $effect(() => {
+    if ($selectedServerId) refreshProfile();
+  });
 
   async function refreshProfile() {
     const p = await GetProfile($selectedServerId);
@@ -70,7 +72,7 @@
 <div class="app">
   <header class="topbar">
     <span class="brand">{launcherName}</span>
-    <button class="cogwheel" on:click={() => settingsOpen = true} aria-label="Settings" title="Settings">
+    <button class="cogwheel" onclick={() => settingsOpen = true} aria-label="Settings" title="Settings">
       ⚙
     </button>
   </header>
@@ -80,7 +82,7 @@
     <section class="content">
       {#if $selectedServerId}
         {#if !profileExists}
-          <SetupCard on:installed={onInstalled} />
+          <SetupCard oninstalled={onInstalled} />
         {/if}
         <NewsFeed />
       {:else}
@@ -91,7 +93,7 @@
 
   <PlayStrip {profileExists} />
 
-  <Settings bind:open={settingsOpen} on:close={() => settingsOpen = false} />
+  <Settings bind:open={settingsOpen} onclose={() => settingsOpen = false} />
 </div>
 
 <style>
@@ -100,8 +102,9 @@
     background: #121216;
     color: #ddd;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --wails-drop-target: drop;
   }
-  .app { display: flex; flex-direction: column; height: 100vh; }
+  .app { display: flex; flex-direction: column; height: 100vh; --wails-drop-target: drop; }
   .topbar {
     height: 44px; background: #0e0e12; border-bottom: 1px solid #2a2a33;
     display: flex; align-items: center; justify-content: space-between;

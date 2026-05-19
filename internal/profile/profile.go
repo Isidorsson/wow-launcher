@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -92,7 +93,7 @@ func (m *Manager) List() []*Profile {
 // Create initializes a new profile by materializing base client files from
 // baseInstall into <profiles_root>/<serverID>/. See MaterializeBase for the
 // hardlink/copy logic — that's the learning gap.
-func (m *Manager) Create(serverID, baseInstall, locale string) (*Profile, error) {
+func (m *Manager) Create(ctx context.Context, serverID, baseInstall, locale string) (*Profile, error) {
 	if _, exists := m.profiles[serverID]; exists {
 		return nil, fmt.Errorf("profile %s already exists", serverID)
 	}
@@ -106,7 +107,7 @@ func (m *Manager) Create(serverID, baseInstall, locale string) (*Profile, error)
 		Locale:      locale,
 		BaseInstall: baseInstall,
 	}
-	if err := MaterializeBase(baseInstall, profileRoot, locale); err != nil {
+	if err := MaterializeBase(ctx, baseInstall, profileRoot, locale); err != nil {
 		return nil, fmt.Errorf("materialize base: %w", err)
 	}
 	m.profiles[serverID] = p

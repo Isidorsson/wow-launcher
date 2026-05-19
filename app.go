@@ -123,7 +123,7 @@ func (a *App) CreateProfile(serverID, baseInstall string) (*ProfileDTO, error) {
 	if err != nil {
 		return nil, fmt.Errorf("validate base install: %w", err)
 	}
-	p, err := a.pm.Create(serverID, inst.Root, inst.Locale)
+	p, err := a.pm.Create(a.ctx, serverID, inst.Root, inst.Locale)
 	if err != nil {
 		return nil, err
 	}

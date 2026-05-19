@@ -42,7 +42,7 @@ func TestMaterializeBase_HappyPath(t *testing.T) {
 	base := seedBaseInstall(t, files)
 	dst := t.TempDir()
 
-	if err := MaterializeBase(base, dst, "enUS"); err != nil {
+	if err := MaterializeBase(nil, base, dst, "enUS"); err != nil {
 		t.Fatalf("materialize: %v", err)
 	}
 
@@ -80,7 +80,7 @@ func TestMaterializeBase_MissingOptionalSkipped(t *testing.T) {
 	base := seedBaseInstall(t, files)
 	dst := t.TempDir()
 
-	if err := MaterializeBase(base, dst, "enUS"); err != nil {
+	if err := MaterializeBase(nil, base, dst, "enUS"); err != nil {
 		t.Fatalf("materialize: %v", err)
 	}
 
@@ -97,7 +97,7 @@ func TestMaterializeBase_Idempotent(t *testing.T) {
 	base := seedBaseInstall(t, files)
 	dst := t.TempDir()
 
-	if err := MaterializeBase(base, dst, "enUS"); err != nil {
+	if err := MaterializeBase(nil, base, dst, "enUS"); err != nil {
 		t.Fatalf("first: %v", err)
 	}
 	// Mutate dst to detect if second run clobbers.
@@ -105,7 +105,7 @@ func TestMaterializeBase_Idempotent(t *testing.T) {
 	if err := os.WriteFile(sentinel, []byte("user-modified"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := MaterializeBase(base, dst, "enUS"); err != nil {
+	if err := MaterializeBase(nil, base, dst, "enUS"); err != nil {
 		t.Fatalf("second: %v", err)
 	}
 	got, _ := os.ReadFile(sentinel)
@@ -121,7 +121,7 @@ func TestMaterializeBase_EmptyArgsError(t *testing.T) {
 		{"/tmp/src", "/tmp/dst", ""},
 	}
 	for _, c := range cases {
-		if err := MaterializeBase(c[0], c[1], c[2]); err == nil {
+		if err := MaterializeBase(nil, c[0], c[1], c[2]); err == nil {
 			t.Errorf("expected error for %v", c)
 		}
 	}
