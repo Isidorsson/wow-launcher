@@ -1,118 +1,167 @@
 /* ============================================================
-   THEME — edit primitives below to reskin entire launcher.
+   THEME — Carbon Steel
+   Monochrome charcoal base · near-white text · restrained
+   steel-cyan accent used sparingly.  References: Linear,
+   VS Code dark+, Steam, Epic Launcher.
+
    Two tiers:
      1. PRIMITIVES (--c-*, --font-*, --space-*, --radius-*)
-        Raw values. Change these for full theme swap.
      2. SEMANTICS (--bg-*, --fg-*, --border-*, --accent-*)
-        Reference primitives. Components use these only.
+   Components reference semantics only.
    ============================================================ */
 
 :root {
   /* ---------- PRIMITIVES ---------- */
 
-  /* Palette — Arcane (deep navy + arcane blue) */
-  --c-ink-900:   #03050b;
-  --c-ink-800:   #060912;
-  --c-ink-700:   #0b1020;
-  --c-ink-600:   #131a30;
-  --c-ink-500:   #1c2746;
-  --c-ink-400:   #2a365a;
-  --c-ink-300:   #3e4f80;
+  /* Carbon — pure neutral charcoals, no warm or cool cast */
+  --c-carbon-1000: #050506;
+  --c-carbon-950:  #0a0a0c;
+  --c-carbon-900:  #101012;
+  --c-carbon-850:  #141416;
+  --c-carbon-800:  #18181a;
+  --c-carbon-750:  #1c1c20;
+  --c-carbon-700:  #222226;
+  --c-carbon-600:  #2a2a2f;
+  --c-carbon-500:  #34343a;
+  --c-carbon-400:  #44444a;
+  --c-carbon-300:  #5c5c64;
 
-  --c-blue-900:  #0d3b78;
-  --c-blue-700:  #1e60b8;
-  --c-blue-500:  #4ea4ff;
-  --c-blue-300:  #8fcdff;
-  --c-blue-100:  #d8ecff;
+  /* Steel — cool desaturated cyan-blue (sparing accent) */
+  --c-steel-700:   #2a5a72;
+  --c-steel-600:   #3a86a8;
+  --c-steel-500:   #4fb3d9;
+  --c-steel-400:   #6fcfe5;
+  --c-steel-300:   #9fdff0;
+  --c-steel-200:   #c8eaf5;
 
-  --c-cyan-400:  #67e8f9;
-  --c-green-400: #4ade80;
-  --c-green-200: #86efac;
-  --c-red-500:   #ef4444;
-  --c-red-200:   #fca5a5;
-  --c-amber-400: #f5c870;
-  --c-violet-400:#a78bfa;
+  /* Status — desaturated to fit monochrome aesthetic */
+  --c-green-400: #6fc77a;
+  --c-green-200: #a8d8af;
+  --c-red-500:   #d65454;
+  --c-red-200:   #e89a9a;
+  --c-amber-400: #d4a05a;
 
-  --c-white:     #ffffff;
-  --c-text-100:  #e6edf7;
-  --c-text-300:  #b5c0d6;
-  --c-text-500:  #74809a;
+  /* Neutrals — near-white, no warm cast */
+  --c-white:      #ffffff;
+  --c-bone-50:    #f8f8f9;
+  --c-bone-100:   #ededee;
+  --c-bone-200:   #d8d8db;
+  --c-bone-300:   #b0b0b5;
+  --c-bone-400:   #8a8a90;
+  --c-bone-500:   #6e6e72;
+  --c-bone-600:   #50505a;
 
-  /* Type scale */
+  /* Type — distinctive modern stack */
   --font-display: 'Cinzel', 'Trajan Pro', serif;
-  --font-script:  'Marcellus', Georgia, serif;
-  --font-body:    -apple-system, 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --font-heading: 'Bricolage Grotesque', 'Manrope', system-ui, sans-serif;
+  --font-script:  'Bricolage Grotesque', Georgia, serif;
+  --font-body:    'Manrope', -apple-system, 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', 'Consolas', monospace;
 
-  --fs-xs:   0.72rem;
-  --fs-sm:   0.82rem;
+  --fs-2xs:  0.66rem;
+  --fs-xs:   0.74rem;
+  --fs-sm:   0.84rem;
   --fs-base: 0.94rem;
-  --fs-md:   1.02rem;
-  --fs-lg:   1.18rem;
-  --fs-xl:   1.4rem;
+  --fs-md:   1.05rem;
+  --fs-lg:   1.22rem;
+  --fs-xl:   1.55rem;
+  --fs-2xl:  2.0rem;
+  --fs-3xl:  2.6rem;
 
-  /* Spacing scale (4px base) */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
+  --tracking-tight:  -0.015em;
+  --tracking-snug:    0em;
+  --tracking-wide:    0.08em;
+  --tracking-wider:   0.16em;
+  --tracking-widest:  0.24em;
 
-  /* Radius */
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 8px;
-  --radius-pill: 999px;
+  /* Spacing (4px base) */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-7:  1.75rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Radius — flat / restrained.  Pills retired. */
+  --radius-sm:   2px;
+  --radius-md:   4px;
+  --radius-lg:   6px;
+  --radius-xl:   8px;
+  --radius-pill: 4px;  /* legacy alias — now flat */
 
   /* Motion */
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --dur-fast: 140ms;
-  --dur-base: 220ms;
-  --dur-slow: 420ms;
+  --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
+  --dur-fast:    120ms;
+  --dur-base:    180ms;
+  --dur-slow:    320ms;
+  --dur-page:    500ms;
 
-  /* Elevation */
-  --shadow-sm: 0 2px 6px rgba(0,0,0,0.35);
-  --shadow-md: 0 6px 18px rgba(0,0,0,0.5);
-  --shadow-lg: 0 16px 48px rgba(0,0,0,0.7);
-  --shadow-rim: inset 0 1px 0 rgba(180,220,255,0.06);
+  /* Elevation — flatter, less drama */
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md:  0 4px 14px rgba(0, 0, 0, 0.5);
+  --shadow-lg:  0 16px 40px rgba(0, 0, 0, 0.6);
+  --shadow-xl:  0 28px 72px rgba(0, 0, 0, 0.7);
+  --shadow-rim: inset 0 1px 0 rgba(237, 237, 238, 0.04);
+  --shadow-glow-accent: 0 0 24px rgba(79, 179, 217, 0.30);
 
 
   /* ---------- SEMANTICS ---------- */
 
-  /* Surfaces */
-  --bg-app:     var(--c-ink-900);
-  --bg-surface: var(--c-ink-700);
-  --bg-raised:  var(--c-ink-600);
-  --bg-sunken:  var(--c-ink-800);
-  --bg-hover:   rgba(78, 164, 255, 0.08);
-  --bg-active:  rgba(78, 164, 255, 0.14);
+  /* Surfaces — graded carbon */
+  --bg-app:        var(--c-carbon-950);
+  --bg-base:       var(--c-carbon-900);
+  --bg-surface:    var(--c-carbon-850);
+  --bg-raised:     var(--c-carbon-800);
+  --bg-elevated:   var(--c-carbon-750);
+  --bg-sunken:     var(--c-carbon-1000);
+  --bg-hover:      rgba(237, 237, 238, 0.04);
+  --bg-active:     rgba(237, 237, 238, 0.08);
+  --bg-frost:      rgba(20, 20, 22, 0.78);
 
-  /* Text */
-  --fg-default: var(--c-text-100);
-  --fg-soft:    var(--c-text-300);
-  --fg-mute:    var(--c-text-500);
-  --fg-bright:  var(--c-white);
-  --fg-on-accent: var(--c-ink-900);
+  /* Text — bone neutrals */
+  --fg-default:    var(--c-bone-100);
+  --fg-soft:       var(--c-bone-200);
+  --fg-mute:       var(--c-bone-400);
+  --fg-faint:      var(--c-bone-500);
+  --fg-bright:     var(--c-bone-50);
+  --fg-on-accent:  var(--c-carbon-950);
 
-  /* Borders */
-  --border-subtle: var(--c-ink-400);
-  --border-default: var(--c-ink-300);
-  --border-strong: var(--c-blue-500);
+  /* Borders — neutral, very subtle */
+  --border-faint:   rgba(237, 237, 238, 0.04);
+  --border-subtle:  rgba(237, 237, 238, 0.08);
+  --border-default: rgba(237, 237, 238, 0.14);
+  --border-strong:  rgba(237, 237, 238, 0.22);
+  --border-accent:  var(--c-steel-500);
 
-  /* Accent — Arcane Blue */
-  --accent:        var(--c-blue-500);
-  --accent-soft:   var(--c-blue-300);
-  --accent-bright: var(--c-blue-100);
-  --accent-deep:   var(--c-blue-700);
-  --accent-glow:   rgba(78, 164, 255, 0.45);
+  /* Accent — Steel cyan (used sparingly: active, focus, progress) */
+  --accent:        var(--c-steel-500);
+  --accent-soft:   var(--c-steel-400);
+  --accent-bright: var(--c-steel-300);
+  --accent-deep:   var(--c-steel-700);
+  --accent-glow:   rgba(79, 179, 217, 0.40);
+
+  /* Rim — bone white (primary CTA, prestige highlight) */
+  --rim:        var(--c-bone-100);
+  --rim-soft:   var(--c-bone-200);
+  --rim-bright: var(--c-bone-50);
+  --rim-deep:   var(--c-bone-300);
+  --rim-glow:   rgba(237, 237, 238, 0.18);
+
+  /* Mystic — legacy alias, fold to accent */
+  --mystic:        var(--c-steel-500);
+  --mystic-soft:   var(--c-steel-400);
+  --mystic-bright: var(--c-steel-300);
 
   /* Status */
   --status-success: var(--c-green-200);
   --status-error:   var(--c-red-200);
   --status-warn:    var(--c-amber-400);
-  --status-info:    var(--c-cyan-400);
+  --status-info:    var(--c-bone-200);
 
   /* Focus ring (WCAG 2.4.7) */
   --focus-ring: 0 0 0 2px var(--bg-app), 0 0 0 4px var(--accent);

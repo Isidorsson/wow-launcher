@@ -115,8 +115,11 @@
 </script>
 
 <section class="changelog">
-  <header>
-    <h2>Release notes</h2>
+  <header class="head">
+    <div class="head-text">
+      <span class="eyebrow">Release history</span>
+      <h2>Patch Notes</h2>
+    </div>
   </header>
   <div class="sample-note">Sample data — wire to real release notes when available.</div>
 
@@ -146,110 +149,119 @@
 <style>
   .changelog { padding: 0; }
 
-  header { margin-bottom: var(--space-4); }
-  header h2 {
+  .head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: var(--space-5);
+  }
+  .head-text { display: flex; flex-direction: column; gap: var(--space-1); }
+  .eyebrow {
+    font-family: var(--font-heading);
+    font-size: var(--fs-2xs);
+    font-weight: 600;
+    color: var(--fg-faint);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+  }
+  .head h2 {
     margin: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-heading);
     font-weight: 700;
     font-size: var(--fs-lg);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    letter-spacing: var(--tracking-tight);
     color: var(--fg-bright);
+    line-height: 1.1;
   }
 
   .sample-note {
-    font-family: var(--font-script);
-    font-style: italic;
-    font-size: 0.78rem;
-    color: var(--text-mute);
-    text-align: center;
-    padding: 0.3rem 0.6rem;
-    margin-bottom: 0.75rem;
-    border: 1px dashed var(--rune-line);
-    border-radius: 2px;
-    background: rgba(0,0,0,0.25);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    color: var(--fg-faint);
+    text-align: left;
+    padding: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-4);
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: transparent;
   }
 
-  .releases { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+  .releases { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
 
   .release {
     position: relative;
-    background: linear-gradient(180deg, rgba(19, 26, 48, 0.6), rgba(8, 11, 20, 0.78));
-    border: 1px solid var(--rune-line);
-    padding: 0.9rem 1.1rem 1rem;
-    border-radius: 2px;
-    box-shadow:
-      inset 0 1px 0 rgba(143, 205, 255, 0.04),
-      0 4px 14px rgba(0,0,0,0.35);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: var(--space-5) var(--space-6);
+    border-radius: var(--radius-md);
     opacity: 0;
-    transform: translateY(8px);
-    animation: rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    transform: translateY(6px);
+    animation: rise 360ms var(--ease-out) forwards;
+    transition: border-color var(--dur-fast) var(--ease-out);
   }
-  .release::before {
-    content: '';
-    position: absolute; left: 0; top: 8px; bottom: 8px;
-    width: 2px;
-    background: linear-gradient(180deg, transparent, var(--gold), transparent);
-    opacity: 0.5;
-  }
+  .release:hover { border-color: var(--border-strong); }
   @keyframes rise {
     to { opacity: 1; transform: translateY(0); }
   }
 
   .ver-row {
-    display: flex; align-items: center; gap: 0.7rem;
-    font-family: var(--font-ui);
-    font-size: 0.74rem;
+    display: flex; align-items: center; gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
   }
   .ver {
-    color: var(--gold-bright);
-    font-family: var(--font-display);
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    padding: 0.15rem 0.55rem;
-    border: 1px solid rgba(78, 164, 255, 0.45);
-    background: rgba(78, 164, 255, 0.1);
-    border-radius: 2px;
-    font-size: 0.72rem;
+    color: var(--fg-bright);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 0;
+    padding: 0.15rem 0.45rem;
+    border: 1px solid var(--border-default);
+    background: var(--bg-raised);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-2xs);
   }
-  time { color: var(--text-mute); font-style: italic; }
+  time {
+    color: var(--fg-faint);
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+  }
 
   .release h3 {
-    margin: 0.45rem 0 0.55rem;
-    color: var(--text-bright);
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 1rem;
-    letter-spacing: 0.06em;
+    margin: var(--space-3) 0 var(--space-2);
+    color: var(--fg-bright);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--fs-md);
+    letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
   }
 
-  .entries { list-style: none; padding: 0; margin: 0.2rem 0 0; display: flex; flex-direction: column; gap: 0.35rem; }
+  .entries { list-style: none; padding: 0; margin: var(--space-2) 0 0; display: flex; flex-direction: column; gap: var(--space-2); }
   .entry {
     display: grid;
-    grid-template-columns: 76px 1fr;
-    gap: 0.7rem;
+    grid-template-columns: 80px 1fr;
+    gap: var(--space-3);
     align-items: baseline;
-    color: var(--text);
-    font-size: 0.92rem;
-    line-height: 1.5;
+    color: var(--fg-default);
+    font-size: var(--fs-sm);
+    line-height: 1.55;
   }
   .kind {
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-weight: 700;
-    font-size: 0.64rem;
-    padding: 0.12rem 0.4rem;
-    border-radius: 2px;
-    border: 1px solid var(--rune-line);
-    background: rgba(0,0,0,0.4);
-    color: var(--text-soft);
-    text-align: center;
+    letter-spacing: var(--tracking-wider);
+    font-weight: 600;
+    font-size: var(--fs-2xs);
+    font-family: var(--font-heading);
+    padding: 0;
+    border-radius: 0;
+    border: 0;
+    background: transparent;
+    color: var(--fg-mute);
+    text-align: left;
   }
-  .kind-added   { color: var(--fel-glow);    border-color: rgba(76, 175, 80, 0.4);   background: rgba(76, 175, 80, 0.08); }
-  .kind-fixed   { color: var(--arcane);      border-color: rgba(106, 169, 216, 0.4); background: rgba(106, 169, 216, 0.08); }
-  .kind-changed { color: var(--gold-bright); border-color: rgba(78, 164, 255, 0.5);  background: rgba(78, 164, 255, 0.1); }
-  .kind-removed { color: var(--blood-glow);  border-color: rgba(192, 57, 43, 0.4);   background: rgba(192, 57, 43, 0.08); }
+  .kind-added   { color: var(--c-green-400); }
+  .kind-fixed   { color: var(--accent); }
+  .kind-changed { color: var(--c-amber-400); }
+  .kind-removed { color: var(--status-error); }
 
-  .text { color: var(--text); }
+  .text { color: var(--fg-default); }
 </style>

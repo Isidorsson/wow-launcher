@@ -14,14 +14,19 @@
   }
 
   function onKey(e: KeyboardEvent, idx: number) {
+    if (e.key === 'Home') { e.preventDefault(); active = tabs[0].id; focusTab(tabs[0].id); return; }
+    if (e.key === 'End')  { e.preventDefault(); active = tabs[tabs.length - 1].id; focusTab(tabs[tabs.length - 1].id); return; }
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
     e.preventDefault();
     const next = e.key === 'ArrowRight'
       ? (idx + 1) % tabs.length
       : (idx - 1 + tabs.length) % tabs.length;
     active = tabs[next].id;
-    const el = document.getElementById(`tab-${tabs[next].id}`);
-    el?.focus();
+    focusTab(tabs[next].id);
+  }
+
+  function focusTab(id: string) {
+    document.getElementById(`tab-${id}`)?.focus();
   }
 </script>
 
@@ -38,50 +43,48 @@
       onclick={() => select(t.id)}
       onkeydown={(e) => onKey(e, i)}
     >
-      {t.label}
+      <span class="label">{t.label}</span>
     </button>
   {/each}
 </div>
 
 <style>
   .tabs {
-    display: flex;
-    gap: var(--space-1);
-    border-bottom: 1px solid var(--border-subtle);
-    padding: 0 var(--space-2);
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+    gap: 0;
   }
+
   button {
     position: relative;
     background: transparent;
     border: 0;
-    color: var(--fg-soft);
-    padding: var(--space-3) var(--space-4);
-    font-family: var(--font-display);
-    font-size: var(--fs-xs);
-    font-weight: 600;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    transition: color var(--dur-fast) var(--ease-out),
-                border-color var(--dur-fast) var(--ease-out);
+    color: var(--fg-mute);
+    padding: 0.65rem 1rem;
+    font-family: var(--font-heading);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+    border-radius: 0;
+    transition:
+      color var(--dur-fast) var(--ease-out);
   }
   button:hover {
-    color: var(--accent-bright);
+    color: var(--fg-default);
   }
   button.active {
     color: var(--fg-bright);
-    border-bottom-color: var(--accent);
   }
   button.active::after {
     content: '';
     position: absolute;
-    left: 50%; bottom: -2px;
-    width: 60%;
+    left: 1rem;
+    right: 1rem;
+    bottom: 0;
     height: 2px;
-    transform: translateX(-50%);
     background: var(--accent);
-    box-shadow: 0 0 12px var(--accent-glow);
-    border-radius: var(--radius-pill);
   }
+
+  .label { display: inline-block; line-height: 1; }
 </style>

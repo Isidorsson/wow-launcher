@@ -114,8 +114,7 @@
     <div class="modal" role="dialog" aria-labelledby="settings-title">
       <header>
         <div class="title-wrap">
-          <span class="sigil" aria-hidden="true">⚜</span>
-          <h2 id="settings-title">The Tome of Configuration</h2>
+          <h2 id="settings-title">Settings</h2>
         </div>
         <button class="close" onclick={close} aria-label="Close">×</button>
       </header>
@@ -199,11 +198,11 @@
   .backdrop {
     position: fixed; inset: 0;
     background:
-      radial-gradient(60% 50% at 50% 40%, rgba(8, 14, 30, 0.55), rgba(0,0,0,0.8));
+      radial-gradient(60% 50% at 50% 40%, rgba(34, 23, 40, 0.6), rgba(0,0,0,0.82));
     display: flex; align-items: center; justify-content: center;
     z-index: 100;
     border: none;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
     animation: fade 200ms ease-out;
   }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
@@ -211,15 +210,12 @@
   .modal {
     width: min(620px, 92vw); max-height: 88vh; overflow: hidden;
     display: flex; flex-direction: column;
-    background:
-      radial-gradient(120% 60% at 50% 0%, rgba(78, 164, 255, 0.1), transparent 60%),
-      linear-gradient(180deg, #131a30 0%, #0a0d16 100%);
-    border: 1px solid var(--rune-line-2);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
     box-shadow:
       0 0 0 1px rgba(0,0,0,0.5),
-      0 24px 72px rgba(0,0,0,0.7),
-      inset 0 1px 0 rgba(143, 205, 255, 0.08);
-    border-radius: 4px;
+      0 24px 72px rgba(0,0,0,0.75);
+    border-radius: var(--radius-md);
     position: relative;
     animation: rise 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
@@ -227,13 +223,7 @@
     from { opacity: 0; transform: translateY(12px) scale(0.985); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
   }
-  .modal::before {
-    content: '';
-    position: absolute; inset: 6px;
-    border: 1px solid rgba(78, 164, 255, 0.28);
-    pointer-events: none;
-    border-radius: 2px;
-  }
+  .modal::before { display: none; }
 
   header {
     display: flex; align-items: center; justify-content: space-between;
@@ -241,17 +231,12 @@
     border-bottom: 1px solid var(--rune-line);
     position: relative;
   }
-  header::after {
-    content: ''; position: absolute; left: 1.5rem; right: 1.5rem; bottom: -1px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
+  header::after { display: none; }
   .title-wrap { display: flex; align-items: center; gap: 0.65rem; }
-  .sigil { color: var(--gold-bright); font-size: 1.1rem; text-shadow: 0 0 12px rgba(143, 205, 255, 0.45); }
   header h2 {
-    margin: 0; color: var(--text-bright);
-    font-family: var(--font-display); font-weight: 700;
-    font-size: 1.05rem; letter-spacing: 0.16em; text-transform: uppercase;
+    margin: 0; color: var(--fg-bright);
+    font-family: var(--font-heading); font-weight: 700;
+    font-size: var(--fs-md); letter-spacing: var(--tracking-tight); text-transform: none;
   }
   .close {
     background: transparent; border: 1px solid transparent;
@@ -278,9 +263,9 @@
   }
   .tabs button:hover { color: var(--gold-bright); }
   .tabs button.active {
-    color: var(--gold-bright);
-    border-bottom-color: var(--gold);
-    text-shadow: 0 0 12px rgba(143, 205, 255, 0.35);
+    color: var(--rim-bright);
+    border-bottom-color: var(--accent);
+    text-shadow: 0 0 12px rgba(249, 115, 22, 0.45);
   }
   .pip {
     display: inline-block; width: 6px; height: 6px; margin-left: 6px;
@@ -321,8 +306,8 @@
     transition: border-color 150ms, box-shadow 150ms;
   }
   select:focus, input[type=text]:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(78, 164, 255, 0.18);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(229, 72, 100, 0.22);
   }
 
   .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -364,26 +349,28 @@
     border-top: 1px solid var(--rune-line);
     position: relative;
   }
-  footer::before {
-    content: ''; position: absolute; left: 1.5rem; right: 1.5rem; top: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  }
+  footer::before { display: none; }
 
   button {
-    padding: 0.55rem 1rem;
-    border: 1px solid var(--rune-line-2);
-    background: linear-gradient(180deg, var(--slate-3), var(--slate-2));
-    color: var(--text);
-    font-family: var(--font-display);
-    font-size: 0.74rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600;
-    border-radius: 2px;
-    transition: all 150ms ease;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--border-default);
+    background: transparent;
+    color: var(--fg-default);
+    font-family: var(--font-heading);
+    font-size: var(--fs-sm);
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      background var(--dur-fast) var(--ease-out);
   }
   button:hover:not(:disabled) {
-    border-color: var(--gold);
-    color: var(--gold-bright);
-    box-shadow: inset 0 0 0 1px rgba(78, 164, 255, 0.3);
+    border-color: var(--border-strong);
+    color: var(--fg-bright);
+    background: var(--bg-hover);
   }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -392,23 +379,17 @@
   }
 
   button.primary {
-    background:
-      linear-gradient(180deg, #7ec4ff 0%, #4ea4ff 45%, #1e60b8 100%);
-    color: #04060c;
-    border-color: #0d3b78;
-    text-shadow: 0 1px 0 rgba(216, 236, 255, 0.5);
-    box-shadow:
-      inset 0 1px 0 rgba(216, 236, 255, 0.6),
-      inset 0 -1px 0 rgba(0,0,0,0.3),
-      0 4px 16px rgba(78, 164, 255, 0.35);
+    background: var(--fg-bright);
+    color: var(--fg-on-accent);
+    border-color: var(--fg-bright);
+    text-shadow: none;
+    box-shadow: none;
     margin-top: 0.4rem;
   }
   button.primary:hover:not(:disabled) {
-    background: linear-gradient(180deg, #cfe9ff, #7ec4ff 55%, #2a7ad8);
-    color: #02030a;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.75),
-      inset 0 -1px 0 rgba(0,0,0,0.3),
-      0 6px 26px rgba(143, 205, 255, 0.55);
+    background: var(--c-bone-200);
+    border-color: var(--c-bone-200);
+    color: var(--fg-on-accent);
+    box-shadow: none;
   }
 </style>

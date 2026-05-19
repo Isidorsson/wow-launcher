@@ -18,7 +18,7 @@
         <option value={srv.id}>{srv.name}</option>
       {/each}
     </select>
-    <svg class="chev" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+    <svg class="chev" viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
       <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </div>
@@ -28,15 +28,17 @@
   .wrap {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
-    min-width: 240px;
+    gap: 3px;
+    min-width: 200px;
   }
   .lbl {
-    font-family: var(--font-display);
-    font-size: 0.62rem;
-    letter-spacing: 0.22em;
+    font-family: var(--font-heading);
+    font-size: var(--fs-2xs);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
-    color: var(--fg-mute);
+    color: var(--fg-faint);
+    line-height: 1;
   }
   .field {
     position: relative;
@@ -47,32 +49,32 @@
     appearance: none;
     -webkit-appearance: none;
     width: 100%;
-    padding: var(--space-2) var(--space-8) var(--space-2) var(--space-3);
+    padding: 0.4rem var(--space-7) 0.4rem var(--space-3);
     background: var(--bg-raised);
     border: 1px solid var(--border-default);
-    border-radius: var(--radius-md);
-    color: var(--fg-bright);
-    font-family: var(--font-display);
+    border-radius: var(--radius-sm);
+    color: var(--fg-default);
+    font-family: var(--font-heading);
     font-size: var(--fs-sm);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 500;
+    letter-spacing: 0;
     cursor: pointer;
     transition: border-color var(--dur-fast) var(--ease-out),
-                box-shadow var(--dur-fast) var(--ease-out);
+                background var(--dur-fast) var(--ease-out);
   }
   select:hover {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent-glow);
+    border-color: var(--border-strong);
+    background: var(--bg-elevated);
   }
   select option {
-    background: var(--bg-sunken);
+    background: var(--bg-raised);
     color: var(--fg-default);
+    font-family: var(--font-body);
   }
   .chev {
     position: absolute;
     right: var(--space-3);
-    color: var(--accent-soft);
+    color: var(--fg-mute);
     pointer-events: none;
   }
 </style>

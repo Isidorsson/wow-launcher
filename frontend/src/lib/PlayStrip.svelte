@@ -2,10 +2,12 @@
   import { SyncServer, Play } from '../../wailsjs/go/main/App';
   import {
     selectedServerId, includeOptional, phase, errorMsg, statusMsg,
-    overallPct, currentFile, bytesPerSec, humanBytes
+    overallPct, currentFile, bytesPerSec, humanBytes, servers
   } from '../stores';
 
   let { profileExists = false }: { profileExists?: boolean } = $props();
+
+  const srv = $derived($servers.find(s => s.id === $selectedServerId));
 
   async function update() {
     if (!profileExists) return;
@@ -36,184 +38,287 @@
 </script>
 
 <footer class="strip">
-  {#if $phase === 'syncing'}
-    <div class="progress">
-      <div class="meta">
-        <span class="file">{$currentFile || 'Preparing the rites…'}</span>
-        <span class="speed">{$bytesPerSec ? `${humanBytes($bytesPerSec)}/s` : ''}</span>
-      </div>
-      <div class="bar">
-        <div class="fill" style="width: {$overallPct}%"></div>
-        <div class="shimmer" style="left: {$overallPct}%"></div>
+  <div class="strip-inner">
+    <div class="dock-left">
+      <div class="realm-chip">
+        <span class="chip-sigil" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2 L15 9 L22 10 L17 15 L18 22 L12 19 L6 22 L7 15 L2 10 L9 9 Z"/>
+          </svg>
+        </span>
+        <div class="chip-text">
+          <span class="chip-label">Realm</span>
+          <span class="chip-name">{srv?.name ?? '—'}</span>
+        </div>
       </div>
     </div>
-  {:else if $errorMsg}
-    <div class="status err">{$errorMsg}</div>
-  {:else if $statusMsg}
-    <div class="status ok">{$statusMsg}</div>
-  {:else}
-    <div class="status muted">{profileExists ? 'Ready for battle' : 'Not installed for this realm'}</div>
-  {/if}
 
-  <div class="actions">
-    <button class="ghost" onclick={update} disabled={!profileExists || $phase === 'syncing'}>
-      Check Update
-    </button>
-    <button class="play" onclick={play} disabled={!profileExists || $phase !== 'idle'}>
-      <span class="play-label">Play</span>
-    </button>
+    <div class="dock-center">
+      {#if $phase === 'syncing'}
+        <div class="progress">
+          <div class="meta">
+            <span class="file" title={$currentFile}>{$currentFile || 'Preparing patch manifest…'}</span>
+            <span class="speed">
+              <span class="pct">{Math.round($overallPct)}%</span>
+              {#if $bytesPerSec}<span class="sep">·</span><span>{humanBytes($bytesPerSec)}/s</span>{/if}
+            </span>
+          </div>
+          <div class="bar">
+            <div class="fill" style="width: {$overallPct}%"></div>
+            <div class="shimmer" style="left: {$overallPct}%"></div>
+          </div>
+        </div>
+      {:else if $errorMsg}
+        <div class="status err">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="status-text">{$errorMsg}</span>
+        </div>
+      {:else if $statusMsg}
+        <div class="status ok">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="status-text">{$statusMsg}</span>
+        </div>
+      {:else}
+        <div class="status muted">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="status-text">{profileExists ? 'Ready for battle' : 'Setup required for this realm'}</span>
+        </div>
+      {/if}
+    </div>
+
+    <div class="dock-right">
+      <button class="ghost" onclick={update} disabled={!profileExists || $phase === 'syncing'} aria-label="Check for updates">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        <span>Check Update</span>
+      </button>
+      <button class="play" onclick={play} disabled={!profileExists || $phase !== 'idle'}>
+        <span class="play-glow" aria-hidden="true"></span>
+        <span class="play-label">Play</span>
+        <svg class="play-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="6 4 20 12 6 20 6 4" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </footer>
 
 <style>
   .strip {
-    display: flex; align-items: center; gap: 1.25rem;
-    padding: 0.85rem 1.5rem;
-    background:
-      linear-gradient(180deg, rgba(6, 9, 18, 0.95), rgba(19, 26, 48, 0.95));
-    border-top: 1px solid var(--rune-line-2);
     position: relative;
-    box-shadow: 0 -6px 16px rgba(0,0,0,0.45);
-  }
-  .strip::before {
-    content: '';
-    position: absolute; left: 0; right: 0; top: -1px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent 5%, var(--gold) 50%, transparent 95%);
-    opacity: 0.6;
+    padding: var(--space-4) var(--space-6);
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+    z-index: 4;
   }
 
+  .strip-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) minmax(0, 2fr) auto;
+    align-items: center;
+    gap: var(--space-5);
+  }
+
+  /* ---------- Realm chip ---------- */
+  .realm-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    min-width: 0;
+    max-width: 280px;
+  }
+  .chip-sigil {
+    width: 24px; height: 24px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .chip-text { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+  .chip-label {
+    font-family: var(--font-heading);
+    font-size: var(--fs-2xs);
+    font-weight: 500;
+    color: var(--fg-faint);
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .chip-name {
+    font-family: var(--font-heading);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--fg-bright);
+    letter-spacing: var(--tracking-tight);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------- Center: status / progress ---------- */
+  .dock-center { min-width: 0; }
+
   .progress {
-    flex: 1; display: flex; flex-direction: column; gap: 0.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
     min-width: 0;
   }
   .meta {
-    display: flex; justify-content: space-between;
-    font-size: 0.78rem; color: var(--text-soft);
-    font-family: var(--font-script); font-style: italic;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--fg-soft);
   }
   .file {
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    max-width: 75%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 60%;
+    color: var(--fg-soft);
   }
-  .speed { color: var(--gold-bright); font-style: normal; font-family: var(--font-ui); }
+  .speed {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    color: var(--fg-default);
+    flex-shrink: 0;
+  }
+  .speed .pct {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: var(--fs-sm);
+    color: var(--fg-bright);
+    letter-spacing: 0;
+  }
+  .speed .sep { color: var(--fg-faint); }
 
   .bar {
-    height: 8px;
-    background: rgba(0,0,0,0.55);
-    border: 1px solid var(--rune-line);
-    border-radius: 2px;
+    height: 4px;
+    background: var(--bg-sunken);
+    border: 0;
+    border-radius: var(--radius-sm);
     overflow: hidden;
     position: relative;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.6);
   }
   .fill {
     height: 100%;
-    background:
-      linear-gradient(90deg, var(--gold-deep), var(--gold) 50%, var(--gold-bright));
-    box-shadow:
-      0 0 12px rgba(78, 164, 255, 0.65),
-      inset 0 1px 0 rgba(216, 236, 255, 0.45);
-    transition: width 200ms ease-out;
+    background: var(--accent);
+    border-radius: inherit;
+    transition: width 180ms var(--ease-out);
   }
-  .shimmer {
-    position: absolute; top: 0; bottom: 0;
-    width: 30px; transform: translateX(-30px);
-    background: linear-gradient(90deg, transparent, rgba(216, 236, 255, 0.55), transparent);
-    transition: left 200ms ease-out;
-    pointer-events: none;
-  }
+  .shimmer { display: none; }
 
   .status {
-    flex: 1;
-    font-family: var(--font-script);
-    font-size: 0.98rem;
-    font-style: italic;
-    letter-spacing: 0.03em;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-family: var(--font-heading);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    letter-spacing: 0.01em;
   }
-  .status.ok    { color: var(--fel-glow); text-shadow: 0 0 8px rgba(124, 226, 129, 0.25); }
-  .status.err   { color: var(--blood-glow); text-shadow: 0 0 8px rgba(255, 122, 106, 0.3); }
-  .status.muted { color: var(--text-mute); }
+  .status .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .status.ok { color: var(--fg-default); }
+  .status.ok .dot { background: var(--status-success); }
+  .status.err { color: var(--status-error); }
+  .status.err .dot { background: var(--status-error); }
+  .status.muted { color: var(--fg-mute); }
+  .status.muted .dot { background: var(--fg-faint); }
 
-  .actions { display: flex; gap: 0.6rem; align-items: center; }
+  /* ---------- Right: actions ---------- */
+  .dock-right {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
 
   button {
-    padding: 0.6rem 1.1rem;
-    border: 1px solid var(--rune-line-2);
-    background: linear-gradient(180deg, var(--slate-3), var(--slate-2));
-    color: var(--text);
-    font-family: var(--font-display);
-    font-size: 0.74rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-weight: 600;
-    border-radius: 2px;
-    transition: all 160ms ease;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--border-default);
+    background: transparent;
+    color: var(--fg-default);
+    font-family: var(--font-heading);
+    font-size: var(--fs-sm);
+    letter-spacing: 0;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      background var(--dur-fast) var(--ease-out);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
   }
   button:hover:not(:disabled) {
-    border-color: var(--gold);
-    color: var(--gold-bright);
-    box-shadow: inset 0 0 0 1px rgba(78, 164, 255, 0.3);
+    border-color: var(--border-strong);
+    color: var(--fg-bright);
+    background: var(--bg-hover);
   }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
   button.ghost { background: transparent; }
 
+  /* ---------- Play CTA — solid bone, sharp ---------- */
   button.play {
     position: relative;
-    padding: 0.75rem 2.6rem;
-    background:
-      linear-gradient(180deg, #7ec4ff 0%, #4ea4ff 45%, #1e60b8 100%);
-    color: #04060c;
-    border: 1px solid #0d3b78;
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 0.95rem;
-    letter-spacing: 0.32em;
+    padding: 0.7rem 2.2rem;
+    background: var(--fg-bright);
+    color: var(--fg-on-accent);
+    border: 1px solid var(--fg-bright);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--fs-base);
+    letter-spacing: var(--tracking-wider);
     text-transform: uppercase;
-    text-shadow: 0 1px 0 rgba(216, 236, 255, 0.55);
-    box-shadow:
-      inset 0 1px 0 rgba(216, 236, 255, 0.65),
-      inset 0 -2px 0 rgba(0,0,0,0.35),
-      0 6px 22px rgba(78, 164, 255, 0.45);
+    border-radius: var(--radius-sm);
+    transition:
+      background var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out);
     overflow: hidden;
   }
-  button.play::before {
-    content: '';
-    position: absolute; inset: 0;
-    background:
-      radial-gradient(80% 120% at 50% -10%, rgba(216, 236, 255, 0.6), transparent 60%);
-    pointer-events: none;
-    opacity: 0.55;
-    transition: opacity 200ms ease;
-  }
-  button.play::after {
-    content: '';
-    position: absolute; top: 0; bottom: 0;
-    left: -40%; width: 30%;
-    background: linear-gradient(90deg, transparent, rgba(216, 236, 255, 0.55), transparent);
-    transform: skewX(-20deg);
-    transition: left 600ms ease;
-    pointer-events: none;
+  button.play .play-glow { display: none; }
+  button.play .play-arrow {
+    color: var(--fg-on-accent);
   }
   button.play:hover:not(:disabled) {
-    background: linear-gradient(180deg, #cfe9ff, #7ec4ff 55%, #2a7ad8);
-    color: #02030a;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.8),
-      inset 0 -2px 0 rgba(0,0,0,0.4),
-      0 0 0 1px rgba(216, 236, 255, 0.4),
-      0 12px 36px rgba(143, 205, 255, 0.65);
-    transform: translateY(-1px);
+    background: var(--c-bone-200);
+    border-color: var(--c-bone-200);
   }
-  button.play:hover:not(:disabled)::before { opacity: 1; }
-  button.play:hover:not(:disabled)::after { left: 130%; }
-  button.play:not(:disabled) .play-label {
-    animation: glow 2.6s ease-in-out infinite;
-    position: relative;
-    z-index: 1;
+  button.play:active:not(:disabled) { transform: translateY(1px); }
+  button.play:disabled {
+    background: var(--bg-elevated);
+    border-color: var(--border-default);
+    color: var(--fg-faint);
   }
-  @keyframes glow {
-    0%, 100% { text-shadow: 0 1px 0 rgba(216, 236, 255, 0.55); }
-    50%      { text-shadow: 0 1px 0 rgba(216, 236, 255, 0.55), 0 0 16px rgba(216, 236, 255, 0.75); }
+  button.play:disabled .play-arrow { color: var(--fg-faint); }
+
+  @media (max-width: 880px) {
+    .strip-inner { grid-template-columns: 1fr auto; }
+    .dock-left { display: none; }
   }
 </style>
