@@ -49,18 +49,16 @@ go build ./...     # backend-only compile check
 go test ./...      # backend tests
 ```
 
-## Two implementation gaps left for you
+## Status
 
-The repo intentionally leaves two functions stubbed. Each is small (~30 lines)
-but has real decisions to make. See the TODO comments in:
+Backend end-to-end ready. Frontend wired. `go test ./...` green.
 
-- `internal/install/realmlist.go` — `WriteRealmlist`. Atomic file write, line
-  endings, decision on whether to write `patchlist`.
-- `internal/profile/materialize.go` — `MaterializeBase`. Hardlink-with-copy-
-  fallback strategy for sharing base client files across server profiles.
-
-Implement, write a couple of table tests, run `go test ./...`, and the
-launcher is end-to-end ready.
+Not yet implemented (good next-session work):
+- Folder picker dialog (runtime.OpenDirectoryDialog) instead of typed path
+- Self-update for the launcher binary itself
+- News feed fetch + render
+- Profile delete / repair UI
+- Cancel button during sync (wire ctx.CancelFunc)
 
 ## License
 
