@@ -4,6 +4,11 @@ This guide shows server owners how to host MPQs (and any other patch files) on
 GitHub Releases, with a GitHub Action that builds and signs the manifest
 automatically every time you publish a release.
 
+> **TL;DR:** copy [`examples/release.yml`](../examples/release.yml) and
+> [`examples/patches.toml`](../examples/patches.toml) into a fresh GitHub
+> repo, set the `MANIFEST_PRIV_KEY` secret, then publish releases. The
+> sections below explain why each piece exists.
+
 You upload files. The Action does the rest. The launcher picks up changes the
 next time a player clicks Sync (or on next launch, if you've enabled the
 startup check).

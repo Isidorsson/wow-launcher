@@ -1,0 +1,48 @@
+# Source of truth for which release assets become manifest entries.
+# Copy this to the ROOT of your patches repo as `patches.toml`.
+#
+# Edit when you add/remove a patch, rename an asset, bump the realmlist,
+# or bump client_version. Commit + push, then create a Release that
+# uploads the assets named in [[file]] entries.
+
+server_id            = "main"
+client_version       = "3.3.5a-12340"
+realmlist            = "logon.example.com"
+locale               = "enUS"
+min_launcher_version = "0.1.0"
+
+# One [[file]] per release asset.
+#
+# asset    = filename uploaded to the GitHub Release
+# path     = destination inside the player's WoW install (forward slashes)
+# required = true for game-critical, false for optional cosmetic packs
+# label    = shown in the launcher UI for optional packs
+
+[[file]]
+asset    = "patch-4.MPQ"
+path     = "Data/patch-4.MPQ"
+required = true
+
+[[file]]
+asset    = "patch-5.MPQ"
+path     = "Data/patch-5.MPQ"
+required = true
+
+[[file]]
+asset    = "patch-enUS-4.MPQ"
+path     = "Data/enUS/patch-enUS-4.MPQ"
+required = true
+
+[[file]]
+asset    = "hd-textures.MPQ"
+path     = "Data/patch-9.MPQ"
+required = false
+label    = "HD textures (2 GB, optional)"
+
+# Non-MPQ files work too — addons, configs, anything the launcher should
+# drop into the install root.
+#
+# [[file]]
+# asset    = "CustomUI.toc"
+# path     = "Interface/AddOns/CustomUI/CustomUI.toc"
+# required = true

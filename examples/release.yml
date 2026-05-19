@@ -1,0 +1,76 @@
+# Copy this file to your PATCHES repo at:
+#   .github/workflows/release.yml
+#
+# Required repo secrets (Settings -> Secrets and variables -> Actions):
+#   MANIFEST_PRIV_KEY    Ed25519 private hex from `sign-manifest -gen-key`
+#
+# Required repo files:
+#   patches.toml         see examples/patches.toml in the launcher repo
+#
+# Per release: bump patches.toml if needed, create a GitHub Release,
+# drag-drop the asset files (MPQs, addons, etc.), publish. This Action
+# fires, builds + signs manifest.json, attaches it to the same release.
+#
+# Replace <OWNER>/wow-launcher with the actual launcher repo if you forked it.
+
+name: Build manifest
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  manifest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed for gh release upload
+    steps:
+      - name: Checkout patches repo
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Clone launcher (for sign-manifest tool)
+        run: git clone --depth 1 https://github.com/<OWNER>/wow-launcher.git launcher
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p assets
+          gh release download "${{ github.event.release.tag_name }}" \
+            --repo "${{ github.repository }}" \
+            --dir ./assets \
+            --pattern '*' \
+            --skip-existing
+
+      - name: Write private key
+        run: |
+          umask 077
+          printf '%s' "${{ secrets.MANIFEST_PRIV_KEY }}" > priv.hex
+
+      - name: Build + sign manifest
+        run: |
+          cd launcher
+          go run ./tools/sign-manifest build \
+            --patches-toml ../patches.toml \
+            --assets-dir ../assets \
+            --release-tag "${{ github.event.release.tag_name }}" \
+            --repo "${{ github.repository }}" \
+            --key ../priv.hex \
+            --out ../manifest.json
+
+      - name: Shred private key
+        if: always()
+        run: shred -u priv.hex || rm -f priv.hex
+
+      - name: Upload manifest to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" manifest.json \
+            --repo "${{ github.repository }}" \
+            --clobber
