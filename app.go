@@ -13,7 +13,10 @@ import (
 	"wow-launcher/internal/install"
 	"wow-launcher/internal/launch"
 	"wow-launcher/internal/manifest"
+	"wow-launcher/internal/news"
 	"wow-launcher/internal/profile"
+
+	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App is the facade exposed to Svelte via Wails binding.
@@ -50,6 +53,12 @@ func (a *App) startup(ctx context.Context) {
 		panic(err)
 	}
 	a.pm = pm
+
+	// Register drag-and-drop handler. Fires whenever the user drops files
+	// onto the window — we look for Wow.exe (or a folder containing it).
+	wruntime.OnFileDrop(ctx, func(x, y int, paths []string) {
+		a.HandleDroppedPaths(paths)
+	})
 }
 
 // --- Frontend-callable methods ---
@@ -145,6 +154,45 @@ func (a *App) SyncServer(serverID string, includeOptional bool) error {
 	}
 	events.Emit(a.ctx, events.StatusMessage, "Sync complete")
 	return nil
+}
+
+// FetchNews returns the news feed for a server. Empty slice if URL not set
+// or feed empty; error only on hard failure (network/parse).
+func (a *App) FetchNews(serverID string) ([]news.Item, error) {
+	srv, err := a.findServer(serverID)
+	if err != nil {
+		return nil, err
+	}
+	return news.Fetch(a.ctx, srv.NewsFeedURL)
+}
+
+// HandleDroppedPaths is invoked by the file-drop handler in main.go.
+// It finds a Wow.exe (or its parent dir) in paths and emits a "drop:install"
+// event with the validated install info, or "drop:error" on failure.
+func (a *App) HandleDroppedPaths(paths []string) {
+	for _, p := range paths {
+		// If user dropped Wow.exe directly, use its parent dir.
+		// If they dropped the install folder, use it as-is.
+		candidate := p
+		info, err := os.Stat(p)
+		if err != nil {
+			continue
+		}
+		if !info.IsDir() {
+			if filepath.Base(p) != "Wow.exe" && filepath.Base(p) != "wow.exe" {
+				continue
+			}
+			candidate = filepath.Dir(p)
+		}
+		inst, err := install.Validate(candidate)
+		if err != nil {
+			events.Emit(a.ctx, "drop:error", err.Error())
+			continue
+		}
+		events.Emit(a.ctx, "drop:install", DetectedInstall{Root: inst.Root, Locale: inst.Locale})
+		return
+	}
+	events.Emit(a.ctx, "drop:error", "No valid WoW install in dropped items. Drop Wow.exe or the folder containing it.")
 }
 
 func (a *App) Play(serverID string) error {

@@ -10,6 +10,10 @@ export function DetectInstalls() {
   return window['go']['main']['App']['DetectInstalls']();
 }
 
+export function FetchNews(arg1) {
+  return window['go']['main']['App']['FetchNews'](arg1);
+}
+
 export function GetBranding() {
   return window['go']['main']['App']['GetBranding']();
 }
@@ -20,6 +24,10 @@ export function GetProfile(arg1) {
 
 export function GetServers() {
   return window['go']['main']['App']['GetServers']();
+}
+
+export function HandleDroppedPaths(arg1) {
+  return window['go']['main']['App']['HandleDroppedPaths'](arg1);
 }
 
 export function Play(arg1) {

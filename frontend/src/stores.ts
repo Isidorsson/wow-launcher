@@ -12,6 +12,7 @@ export const servers = writable<config.Server[]>([]);
 export const selectedServerId = writable<string>('');
 export const detectedInstalls = writable<Array<{ root: string; locale: string }>>([]);
 export const errorMsg = writable<string>('');
+export const includeOptional = writable<boolean>(false);
 
 export function humanBytes(n: number): string {
   if (n < 1024) return `${n} B`;
