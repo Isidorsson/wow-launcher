@@ -285,7 +285,7 @@
 
   .topbar-right {
     display: flex;
-    align-items: center;
+    align-items: end;
     justify-content: flex-end;
     gap: var(--space-3);
   }
