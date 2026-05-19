@@ -1,0 +1,33 @@
+# Launcher branding/config — fork this and edit for your server.
+# Compiled into binary at build time (see internal/config).
+
+[branding]
+launcher_name = "Azeroth Launcher"
+window_title  = "Azeroth Launcher"
+primary_color = "#c9a227"
+logo_path     = "frontend/src/assets/logo.png"
+
+# Multiple servers supported. First in list = default.
+# Each manifest_url returns a signed manifest (see docs/manifest.md).
+[[servers]]
+id            = "demo"
+name          = "Demo Realm"
+manifest_url  = "https://example.com/manifest.json"
+website       = "https://example.com"
+news_feed_url = "https://example.com/news.json"
+
+# [[servers]]
+# id            = "second"
+# name          = "Second Realm"
+# manifest_url  = "https://other.example.com/manifest.json"
+
+[security]
+# Ed25519 public key (hex). Manifests MUST be signed with matching private key.
+# Generate keypair: `go run ./tools/sign-manifest -gen-key`
+# Leave empty to disable signature verification (NOT recommended for production).
+manifest_pubkey_hex = ""
+
+[paths]
+# Where multi-server profile installs live, relative to user's AppData/Local.
+# Each server gets its own subdir to keep MPQ patches isolated.
+profiles_subdir = "WowLauncher/profiles"

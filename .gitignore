@@ -1,0 +1,42 @@
+# Build output
+build/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Frontend
+node_modules/
+frontend/dist/
+frontend/package.json.md5
+
+# Go
+*.test
+*.out
+coverage.txt
+vendor/
+
+# Wails dev / generated artifacts
+# (wailsjs/ is committed: it's the generated Go<->JS binding surface
+#  the frontend imports. Regen with `wails generate module`.)
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Secrets — NEVER commit signing keys
+priv.hex
+*.privkey
+*.key
+private*.hex
+
+# Local config overrides for development
+config.local.toml
+
+# Runtime profile data (if user runs launcher from repo)
+profiles/
