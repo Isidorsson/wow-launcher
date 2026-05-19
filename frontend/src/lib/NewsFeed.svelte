@@ -37,6 +37,45 @@
       url: 'https://example.invalid/xfaction-bg',
       category: 'news',
     },
+    {
+      title: 'Hotfix — Ruby Sanctum trash respawn',
+      date: '2026-04-24',
+      body: 'Halion\'s antechamber trash no longer resets mid-pull when the raid wipes near the threshold. Twilight Drakes properly award reputation to the full raid group. Minor server stability improvements.',
+      category: 'patch',
+    },
+    {
+      title: 'Noblegarden — eggs hidden across the realm',
+      date: '2026-04-19',
+      body: 'Brightly painted eggs nestle in the starting zones of every race. Hunt the Spring Rabbit\'s Foot, race the chocolate-fueled mount quest, and don the Noble Garments transmog set, available all week.',
+      url: 'https://example.invalid/noblegarden',
+      category: 'event',
+    },
+    {
+      title: 'Arena Season 8 concludes — Wrathful gear unlocked',
+      date: '2026-04-14',
+      body: 'Final standings locked. Top 0.5% receive Vanquisher titles and the Relentless Gladiator\'s Frost Wyrm. Wrathful Gladiator pieces now purchasable with honor at reduced cost. Season 9 ladder opens next reset.',
+      url: 'https://example.invalid/arena-s8',
+      category: 'news',
+    },
+    {
+      title: 'Lorewalker chronicle — The Lich King\'s Final Hours',
+      date: '2026-04-08',
+      body: 'A new in-character chronicle from the Argent Crusade archivists recounts the assault on the Frozen Throne. Read it in the Storyteller tab inside Dalaran, or pick up the bound codex from the city vendor.',
+      url: 'https://example.invalid/lich-king-chronicle',
+      category: 'lore',
+    },
+    {
+      title: 'Anti-cheat sweep — 412 accounts actioned',
+      date: '2026-04-02',
+      body: 'Recent wave of botting and teleport-hack detections resulted in permanent bans across all realms. Appeal window remains open for 14 days. Report suspicious behavior via the in-game ticket system.',
+      category: 'news',
+    },
+    {
+      title: 'Mid-Summer Fire Festival — early calendar notice',
+      date: '2026-03-28',
+      body: 'Mark your calendars: the Burning Blossom returns mid-June. Flame wardens are being recruited now; honor the bonfires of every capital and desecrate the rival faction\'s flames for unique tabards and the Brazier of Dancing Flames.',
+      category: 'event',
+    },
   ];
 
   const displayItems = $derived(items.length > 0 ? items : placeholder);
@@ -55,7 +94,13 @@
       const result = await FetchNews($selectedServerId);
       items = result ?? [];
     } catch (e: any) {
-      error = e?.message ?? String(e);
+      const msg = e?.message ?? String(e);
+      if (/\b404\b|not found/i.test(msg)) {
+        // No feed configured for this realm — fall back to sample data silently.
+        error = '';
+      } else {
+        error = msg;
+      }
     } finally {
       loading = false;
     }
@@ -240,6 +285,7 @@
   .cat-patch  { color: var(--gold-bright); border-color: rgba(78, 164, 255, 0.5); background: rgba(78, 164, 255, 0.1); }
   .cat-event  { color: var(--fel-glow);    border-color: rgba(76, 175, 80, 0.4);  background: rgba(76, 175, 80, 0.08); }
   .cat-news   { color: var(--arcane);      border-color: rgba(106, 169, 216, 0.4); background: rgba(106, 169, 216, 0.08); }
+  .cat-lore   { color: #c9a86a;            border-color: rgba(201, 168, 106, 0.4);  background: rgba(201, 168, 106, 0.08); }
 
   time { font-style: italic; }
 

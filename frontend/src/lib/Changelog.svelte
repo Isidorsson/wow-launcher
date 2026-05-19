@@ -10,6 +10,18 @@
 
   const releases: Release[] = [
     {
+      version: '1.5.0-beta',
+      date: '2026-05-19',
+      title: 'Stress-test fixtures & layout hardening',
+      entries: [
+        { kind: 'added', text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat — long-form entry used to verify multi-line wrapping behaviour inside the entry grid does not break baseline alignment with the kind chip.' },
+        { kind: 'added', text: 'Pellentesque-habitant-morbi-tristique-senectus-et-netus-et-malesuada-fames-ac-turpis-egestas — single unbroken token to test overflow handling and word-break rules on narrow viewports.' },
+        { kind: 'changed', text: 'Short.' },
+        { kind: 'fixed', text: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.' },
+        { kind: 'removed', text: 'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum, plus several additional deprecated hooks that nobody had touched since the original prototype shipped two releases ago.' },
+      ],
+    },
+    {
       version: '1.4.0',
       date: '2026-05-15',
       title: 'Drag-drop installs across drives',
@@ -18,6 +30,8 @@
         { kind: 'added', text: 'Cross-drive base installs — game folder can live on a different disk from the launcher cache.' },
         { kind: 'fixed', text: 'Realm dropdown no longer flickers when switching while a sync is in progress.' },
         { kind: 'changed', text: 'News card spacing tightened on narrow windows.' },
+        { kind: 'added', text: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.' },
+        { kind: 'changed', text: 'Drop-target overlay opacity lowered from 0.85 to 0.6 to keep the underlying news card legible during the hover state.' },
       ],
     },
     {
@@ -48,6 +62,49 @@
         { kind: 'added', text: 'Settings modal with Installation / Downloads / Profile tabs.' },
         { kind: 'changed', text: 'Play strip moved to bottom — progress bar replaces status text during sync.' },
         { kind: 'removed', text: 'Legacy "Setup Card" panel — superseded by the setup-call in the news pane.' },
+      ],
+    },
+    {
+      version: '1.1.0',
+      date: '2026-03-18',
+      title: 'Patcher rewrite — chunked downloads',
+      entries: [
+        { kind: 'added', text: 'Parallel chunked downloads with resumable transfer state. Bandwidth ceiling configurable per realm; sane defaults pull from system network class.' },
+        { kind: 'added', text: 'SHA-256 verification on every patch chunk before commit to the install tree, with automatic retry on mismatch up to three attempts before surfacing the error to the user.' },
+        { kind: 'changed', text: 'Patch progress now reported as bytes-transferred rather than file-count, which gives a more honest ETA on mixed-size manifests where a handful of multi-gigabyte MPQs dominate total transfer time.' },
+        { kind: 'fixed', text: 'Patcher would occasionally exit with status 0 while leaving the install in a partially-written state — temp files now atomically renamed on success and cleaned on failure.' },
+        { kind: 'fixed', text: 'Tooltip clipping on the realm selector in the bottom-right corner when running at sub-1280px widths.' },
+        { kind: 'removed', text: 'Single-threaded "classic" downloader codepath behind the deprecated --legacy-patcher flag. The flag is now ignored with a console warning and will be removed entirely in 2.0.' },
+      ],
+    },
+    {
+      version: '1.0.2',
+      date: '2026-03-05',
+      title: 'First-run polish',
+      entries: [
+        { kind: 'fixed', text: 'First-launch wizard could deadlock on systems with no writable AppData path (rare, surfaced by a handful of corporate-managed Windows installs).' },
+        { kind: 'fixed', text: 'Realm list cache TTL respected on cold start instead of always refetching.' },
+        { kind: 'changed', text: 'Default install root suggestion now respects the largest fixed-disk free-space heuristic rather than always picking C:.' },
+      ],
+    },
+    {
+      version: '1.0.1',
+      date: '2026-02-22',
+      title: 'Day-one hotfix',
+      entries: [
+        { kind: 'fixed', text: 'Crash when launching with no realms configured.' },
+        { kind: 'fixed', text: 'Magnam aliquam quaerat voluptatem ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur — fixed a race in the early bootstrap path that occasionally left the splash screen visible behind the main window.' },
+      ],
+    },
+    {
+      version: '1.0.0',
+      date: '2026-02-20',
+      title: 'Initial release',
+      entries: [
+        { kind: 'added', text: 'Initial public release of the launcher with realm selection, news feed, patcher, and one-click play.' },
+        { kind: 'added', text: 'Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. This entry exists to verify that the very first release in the timeline still renders its rise animation with a sensible delay rather than waiting noticeably long for the staggered cascade to complete.' },
+        { kind: 'added', text: 'Dark cathedral theme with gilt rune accents.' },
+        { kind: 'added', text: 'Wails + Svelte 5 frontend bundled into a single executable under 18 MB.' },
       ],
     },
   ];
