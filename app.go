@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"wow-launcher/internal/config"
 	"wow-launcher/internal/downloader"
@@ -27,6 +28,7 @@ type App struct {
 	cfg *config.Config
 	dl  *downloader.Downloader
 	pm  *profile.Manager
+	ms  *manifest.StateStore
 }
 
 func NewApp() *App {
@@ -55,11 +57,56 @@ func (a *App) startup(ctx context.Context) {
 	}
 	a.pm = pm
 
+	sdir, err := stateDir(cfg.Paths.ProfilesSubdir)
+	if err == nil {
+		if ms, err := manifest.OpenStateStore(sdir); err == nil {
+			a.ms = ms
+		}
+	}
+
 	// Register drag-and-drop handler. Fires whenever the user drops files
 	// onto the window — we look for Wow.exe (or a folder containing it).
 	wruntime.OnFileDrop(ctx, func(x, y int, paths []string) {
 		a.HandleDroppedPaths(paths)
 	})
+
+	// Background: check each server's manifest for content drift since last
+	// run. Doesn't block startup; emits update:available per server on change.
+	go a.checkForUpdates()
+}
+
+// checkForUpdates runs once at startup. For each server, it does a conditional
+// fetch (If-None-Match) and emits update:available if the content hash differs
+// from what we saw last time. Failure (network, bad sig) is silent — the user
+// can still hit Sync manually.
+func (a *App) checkForUpdates() {
+	if a.ms == nil {
+		return
+	}
+	for _, srv := range a.cfg.Servers {
+		prev := a.ms.Get(srv.ID)
+		res, err := manifest.FetchWithETag(a.ctx, srv.ManifestURL, a.cfg.Security.ManifestPubkeyHex, prev.ETag, prev.ManifestHash)
+		if err != nil {
+			continue
+		}
+		next := manifest.ServerState{
+			ETag:         res.ETag,
+			ManifestHash: prev.ManifestHash,
+			LastChecked:  time.Now().Unix(),
+		}
+		if res.Manifest != nil {
+			next.ManifestHash = res.ContentHash
+		}
+		_ = a.ms.Set(srv.ID, next)
+
+		if res.Changed && res.Manifest != nil {
+			events.Emit(a.ctx, events.UpdateAvailable, events.UpdatePayload{
+				ServerID:   srv.ID,
+				ServerName: srv.Name,
+				FileCount:  len(res.Manifest.Files),
+			})
+		}
+	}
 }
 
 // --- Frontend-callable methods ---
@@ -161,17 +208,33 @@ func (a *App) SyncServer(serverID string, includeOptional bool) error {
 	if !ok {
 		return errors.New("create profile before syncing")
 	}
-	m, err := manifest.Fetch(a.ctx, srv.ManifestURL, a.cfg.Security.ManifestPubkeyHex)
+	var prev manifest.ServerState
+	if a.ms != nil {
+		prev = a.ms.Get(serverID)
+	}
+	res, err := manifest.FetchWithETag(a.ctx, srv.ManifestURL, a.cfg.Security.ManifestPubkeyHex, "", prev.ManifestHash)
 	if err != nil {
 		return err
+	}
+	m := res.Manifest
+	if m == nil {
+		// 304 with empty If-None-Match shouldn't happen — but treat as no-op.
+		events.Emit(a.ctx, events.StatusMessage, "Already up to date")
+		return nil
 	}
 	events.Emit(a.ctx, events.StatusMessage, fmt.Sprintf("Syncing %s — %d files", srv.Name, len(m.Files)))
 	if err := a.dl.SyncManifest(a.ctx, p.Root, m, includeOptional); err != nil {
 		return err
 	}
-	// Write realmlist after files are in place.
 	if err := install.WriteRealmlist(&install.Install{Root: p.Root, Locale: p.Locale}, m.Realmlist); err != nil {
 		return fmt.Errorf("write realmlist: %w", err)
+	}
+	if a.ms != nil {
+		_ = a.ms.Set(serverID, manifest.ServerState{
+			ETag:         res.ETag,
+			ManifestHash: res.ContentHash,
+			LastChecked:  time.Now().Unix(),
+		})
 	}
 	events.Emit(a.ctx, events.StatusMessage, "Sync complete")
 	return nil
@@ -253,4 +316,19 @@ func profilesDir(sub string) (string, error) {
 		return "", err
 	}
 	return filepath.Join(base, filepath.FromSlash(sub)), nil
+}
+
+// stateDir picks the parent of profilesSubdir for storing non-profile state
+// (manifest cache, etc.). E.g. profiles_subdir = "WowLauncher/profiles" →
+// state lives in "WowLauncher/state".
+func stateDir(profilesSub string) (string, error) {
+	base, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+	parent := filepath.Dir(filepath.FromSlash(profilesSub))
+	if parent == "." || parent == string(filepath.Separator) {
+		parent = filepath.FromSlash(profilesSub)
+	}
+	return filepath.Join(base, parent, "state"), nil
 }

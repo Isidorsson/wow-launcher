@@ -246,11 +246,18 @@ URL is stable, the public key is stable, the launcher just rechecks.
 
 ## When does the launcher check for updates?
 
-| Trigger        | What it does                                                  |
-|----------------|---------------------------------------------------------------|
-| Sync button    | Fetches manifest, downloads any file whose SHA256 mismatches  |
-| Play button    | If `min_launcher_version` exceeds installed launcher, refuses |
-| On startup     | (optional, planned) Fetches manifest, shows banner if changed |
+| Trigger        | What it does                                                              |
+|----------------|---------------------------------------------------------------------------|
+| On startup     | Background conditional fetch (`If-None-Match`). Shows banner if changed.  |
+| Sync button    | Fetches manifest, downloads any file whose SHA256 mismatches.             |
+| Play button    | If `min_launcher_version` exceeds installed launcher, refuses.            |
+
+The startup check stores each server's manifest content hash + ETag under
+`<UserConfigDir>/WowLauncher/state/manifest-state.json`. On next launch it
+sends the saved ETag as `If-None-Match`. If GitHub returns `304 Not Modified`
+no bandwidth is spent; if the content hash actually differs from last seen,
+the launcher emits `update:available` and the UI shows a banner pointing the
+player at the Sync button.
 
 The downloader is SHA256-driven: a file is considered up-to-date if its hash
 matches the manifest. Renaming a file, changing its content, or bumping a

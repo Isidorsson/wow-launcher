@@ -14,6 +14,9 @@ export const detectedInstalls = writable<Array<{ root: string; locale: string }>
 export const errorMsg = writable<string>('');
 export const includeOptional = writable<boolean>(false);
 
+export type UpdateNotice = { serverId: string; serverName: string; fileCount: number };
+export const updateAvailable = writable<UpdateNotice | null>(null);
+
 export function humanBytes(n: number): string {
   if (n < 1024) return `${n} B`;
   const units = ['KB', 'MB', 'GB', 'TB'];

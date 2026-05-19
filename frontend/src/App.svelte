@@ -6,7 +6,8 @@
   } from '../wailsjs/go/main/App';
   import {
     servers, selectedServerId, detectedInstalls,
-    phase, statusMsg, errorMsg, currentFile, overallPct, bytesPerSec
+    phase, statusMsg, errorMsg, currentFile, overallPct, bytesPerSec,
+    updateAvailable
   } from './stores';
   import ServerSelect from './lib/ServerSelect.svelte';
   import TabNav from './lib/TabNav.svelte';
@@ -92,7 +93,14 @@
     EventsOn('drop:error', (msg: string) => {
       errorMsg.set(String(msg));
     });
+    EventsOn('update:available', (p: { serverId: string; serverName: string; fileCount: number }) => {
+      updateAvailable.set(p);
+    });
   });
+
+  function dismissUpdate() {
+    updateAvailable.set(null);
+  }
 
   function onInstalled() {
     profileExists = true;
@@ -136,6 +144,17 @@
       </button>
     </div>
   </header>
+
+  {#if $updateAvailable && $updateAvailable.serverId === $selectedServerId}
+    <div class="update-banner" role="status">
+      <span class="update-dot" aria-hidden="true"></span>
+      <span class="update-text">
+        Patches updated for <strong>{$updateAvailable.serverName}</strong>
+        — {$updateAvailable.fileCount} file{$updateAvailable.fileCount === 1 ? '' : 's'} in manifest. Click Sync to download.
+      </span>
+      <button class="update-dismiss" onclick={dismissUpdate} aria-label="Dismiss">×</button>
+    </div>
+  {/if}
 
   <main class="main">
     {#if !$selectedServerId}
@@ -317,6 +336,39 @@
     width: 6px; height: 6px; border-radius: 50%;
     background: var(--status-error);
   }
+
+  /* ---------- Update banner ---------- */
+  .update-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-5);
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--accent);
+    color: var(--fg-bright);
+    font-family: var(--font-heading);
+    font-size: var(--fs-sm);
+  }
+  .update-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+    flex-shrink: 0;
+  }
+  .update-text { flex: 1; color: var(--fg-soft); }
+  .update-text strong { color: var(--fg-bright); }
+  .update-dismiss {
+    background: transparent;
+    border: none;
+    color: var(--fg-mute);
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 var(--space-2);
+    cursor: pointer;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .update-dismiss:hover { color: var(--fg-bright); }
 
   /* ---------- Main ---------- */
   .main {

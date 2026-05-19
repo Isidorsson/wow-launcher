@@ -13,7 +13,14 @@ const (
 	DownloadDone     = "download:done"     // payload: DonePayload
 	DownloadError    = "download:error"    // payload: ErrorPayload
 	StatusMessage    = "status:message"    // payload: string
+	UpdateAvailable  = "update:available"  // payload: UpdatePayload — startup manifest check found new content
 )
+
+type UpdatePayload struct {
+	ServerID   string `json:"serverId"`
+	ServerName string `json:"serverName"`
+	FileCount  int    `json:"fileCount"`
+}
 
 type StartPayload struct {
 	File      string `json:"file"`
