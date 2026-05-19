@@ -6,13 +6,17 @@
   let listEl: HTMLUListElement | undefined = $state();
 
   const current = $derived($servers.find(s => s.id === $selectedServerId));
-  const activeIndex = $derived(
+  const selectedIndex = $derived(
     Math.max(0, $servers.findIndex(s => s.id === $selectedServerId))
   );
 
+  function focusIdx(n: number) {
+    (listEl?.children[n] as HTMLElement | undefined)?.focus();
+  }
+
   function toggle() {
     open = !open;
-    if (open) queueMicrotask(focusActive);
+    if (open) queueMicrotask(focusSelected);
   }
 
   function close() {
@@ -20,13 +24,12 @@
     triggerEl?.focus();
   }
 
-  function focusActive() {
-    const el = listEl?.querySelector<HTMLElement>(`[data-idx="${activeIndex}"]`);
-    el?.focus();
+  function focusSelected() {
+    focusIdx(selectedIndex);
   }
 
   function pick(id: string) {
-    selectedServerId.set(id);
+    if (id !== $selectedServerId) selectedServerId.set(id);
     close();
   }
 
@@ -34,34 +37,38 @@
     if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       open = true;
-      queueMicrotask(focusActive);
+      queueMicrotask(focusSelected);
     }
   }
 
   function onListKey(e: KeyboardEvent, idx: number) {
-    if (e.key === 'Escape') { e.preventDefault(); close(); return; }
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      pick($servers[idx].id);
-      return;
-    }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      const next = (idx + 1) % $servers.length;
-      listEl?.querySelector<HTMLElement>(`[data-idx="${next}"]`)?.focus();
-    }
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      const prev = (idx - 1 + $servers.length) % $servers.length;
-      listEl?.querySelector<HTMLElement>(`[data-idx="${prev}"]`)?.focus();
-    }
-    if (e.key === 'Home') {
-      e.preventDefault();
-      listEl?.querySelector<HTMLElement>(`[data-idx="0"]`)?.focus();
-    }
-    if (e.key === 'End') {
-      e.preventDefault();
-      listEl?.querySelector<HTMLElement>(`[data-idx="${$servers.length - 1}"]`)?.focus();
+    const len = $servers.length;
+    switch (e.key) {
+      case 'Escape':
+        e.preventDefault();
+        close();
+        return;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        pick($servers[idx].id);
+        return;
+      case 'ArrowDown':
+        e.preventDefault();
+        focusIdx((idx + 1) % len);
+        return;
+      case 'ArrowUp':
+        e.preventDefault();
+        focusIdx((idx - 1 + len) % len);
+        return;
+      case 'Home':
+        e.preventDefault();
+        focusIdx(0);
+        return;
+      case 'End':
+        e.preventDefault();
+        focusIdx(len - 1);
+        return;
     }
   }
 
@@ -109,13 +116,11 @@
         class="list"
         role="listbox"
         aria-labelledby="realm-label"
-        tabindex="-1"
       >
         {#each $servers as srv, i}
           <li
             role="option"
-            tabindex="-1"
-            data-idx={i}
+            tabindex={i === selectedIndex ? 0 : -1}
             class="opt"
             class:selected={srv.id === $selectedServerId}
             aria-selected={srv.id === $selectedServerId}
