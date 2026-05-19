@@ -1,7 +1,12 @@
 # Manifest format
 
 The manifest is the source of truth for what patches the launcher pulls.
-You host it at a stable HTTPS URL; the launcher fetches it on every Sync.
+You host it at a stable HTTPS URL; the launcher fetches it on every Sync,
+and (with ETag-aware conditional GET) on startup to detect changes.
+
+> **Most operators should follow [github-hosting.md](github-hosting.md)** —
+> drag-drop patches to a GitHub Release, an Action signs the manifest. This
+> page is the underlying schema + the manual workflow for custom CDNs.
 
 ## Inner manifest (what you sign)
 
@@ -49,8 +54,19 @@ You host it at a stable HTTPS URL; the launcher fetches it on every Sync.
 # One-time: generate a keypair. Keep private SECRET (server/CI only).
 go run ./tools/sign-manifest -gen-key
 
-# Per release: write your manifest as JSON, then sign it.
+# Per release — choice of two flows:
+
+# A) Hand-written manifest (full control, custom CDN URLs):
 go run ./tools/sign-manifest -key priv.hex manifest-unsigned.json manifest.json
+
+# B) Build from a patches.toml + assets directory (hashes + signs in one shot):
+go run ./tools/sign-manifest build \
+  --patches-toml patches.toml \
+  --assets-dir ./assets \
+  --release-tag v3 \
+  --repo owner/repo \
+  --key priv.hex \
+  --out manifest.json
 
 # Upload manifest.json to your manifest_url; upload patches to CDN.
 ```

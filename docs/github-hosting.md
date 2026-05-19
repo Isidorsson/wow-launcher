@@ -287,6 +287,14 @@ re-running the Action. Re-publish the release.
 The downloader resumes — partial files are kept on disk and continue next sync.
 No special config needed.
 
+**Player reports stuck "update available" banner**
+The launcher caches the last-seen manifest content hash + ETag at
+`<UserConfigDir>/WowLauncher/state/manifest-state.json`
+(`%LOCALAPPDATA%\WowLauncher\state\manifest-state.json` on Windows). Deleting
+that file forces a clean re-check on next launch. The cache is best-effort —
+a missing or corrupt file is treated as "no prior knowledge", never blocks
+launching.
+
 ## What this guide does NOT cover
 
 - **News feed JSON** — separate file at `news_feed_url`. See

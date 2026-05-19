@@ -10,7 +10,10 @@ Open source — fork it, edit `config.toml`, host a signed manifest, ship.
   base files, downloaded patches) so MPQs from server A don't conflict with B.
 - Resumable, hash-verified, concurrent-chunk downloads (`Range` requests).
 - Ed25519-signed manifests so a CDN compromise can't push malware patches.
-- Auto-detect existing 3.3.5 install + manual path override.
+- Startup update check with ETag caching — 304 on unchanged manifests, banner
+  when content drifts.
+- Auto-detect existing 3.3.5 install + folder picker + drag-drop install path.
+- News feed per server.
 
 ## Architecture
 
@@ -24,6 +27,13 @@ See `docs/manifest.md` for the schema.
 
 ## Quickstart (server operator)
 
+**Recommended path — GitHub Releases + Action:** see
+[docs/github-hosting.md](docs/github-hosting.md). Zero CDN setup, drag-drop
+MPQ uploads, Action signs the manifest on `release: published`. The startup
+update check (ETag + content-hash cache) is automatic — no per-player config.
+
+**Manual path — your own CDN:**
+
 1. Fork this repo.
 2. Edit `config.toml`:
    - `branding.launcher_name`
@@ -31,11 +41,14 @@ See `docs/manifest.md` for the schema.
    - `security.manifest_pubkey_hex` (run `go run ./tools/sign-manifest -gen-key`)
 3. Build patches into MPQs (use [MPQEditor] or [StormLib]).
 4. Upload patches to your CDN (Cloudflare R2 + bunny.net recommended).
-5. Author `manifest-unsigned.json` (see docs).
-6. Sign: `go run ./tools/sign-manifest -key priv.hex manifest-unsigned.json manifest.json`.
-7. Upload `manifest.json` to `manifest_url`.
-8. Build launcher: `wails build -platform windows/amd64`.
-9. Ship `build/bin/wow-launcher.exe` to users.
+5. Either:
+   - Author `manifest-unsigned.json` by hand (see `docs/manifest.md`) and sign:
+     `go run ./tools/sign-manifest -key priv.hex manifest-unsigned.json manifest.json`
+   - Or use `sign-manifest build --patches-toml ... --assets-dir ... --key ...`
+     to hash + sign in one shot.
+6. Upload `manifest.json` to `manifest_url`.
+7. Build launcher: `wails build -platform windows/amd64`.
+8. Ship `build/bin/wow-launcher.exe` to users.
 
 [MPQEditor]: http://www.zezula.net/en/mpq/download.html
 [StormLib]: https://github.com/ladislav-zezula/StormLib
@@ -54,11 +67,10 @@ go test ./...      # backend tests
 Backend end-to-end ready. Frontend wired. `go test ./...` green.
 
 Not yet implemented (good next-session work):
-- Folder picker dialog (runtime.OpenDirectoryDialog) instead of typed path
 - Self-update for the launcher binary itself
-- News feed fetch + render
 - Profile delete / repair UI
 - Cancel button during sync (wire ctx.CancelFunc)
+- Play button gate on `min_launcher_version`
 
 ## License
 
