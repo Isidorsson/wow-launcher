@@ -296,18 +296,32 @@
   }
 
   select, input[type=text] {
-    padding: 0.55rem 0.75rem;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--rune-line);
-    color: var(--text-bright);
-    font-family: var(--font-ui); font-size: 0.92rem;
-    border-radius: 2px;
+    padding: 0.5rem 0.75rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--border-default);
+    color: var(--fg-default);
+    font-family: var(--font-body); font-size: var(--fs-sm);
+    border-radius: var(--radius-sm);
     outline: none;
-    transition: border-color 150ms, box-shadow 150ms;
+    transition: border-color var(--dur-fast) var(--ease-out),
+                background var(--dur-fast) var(--ease-out);
+  }
+  select:hover, input[type=text]:hover {
+    border-color: var(--border-strong);
+    background: var(--bg-elevated);
   }
   select:focus, input[type=text]:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(229, 72, 100, 0.22);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+  select option {
+    background-color: var(--bg-raised);
+    color: var(--fg-default);
+  }
+  select option:checked,
+  select option:hover {
+    background-color: var(--bg-elevated);
+    color: var(--fg-bright);
   }
 
   .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }

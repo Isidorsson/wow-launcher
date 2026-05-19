@@ -67,9 +67,18 @@
     background: var(--bg-elevated);
   }
   select option {
-    background: var(--bg-raised);
+    background-color: var(--bg-raised);
     color: var(--fg-default);
     font-family: var(--font-body);
+    padding: 6px 10px;
+  }
+  select option:checked {
+    background-color: var(--bg-elevated);
+    color: var(--fg-bright);
+  }
+  select option:hover {
+    background-color: var(--bg-elevated);
+    color: var(--fg-bright);
   }
   .chev {
     position: absolute;
