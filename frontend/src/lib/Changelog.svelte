@@ -49,7 +49,7 @@
       date: '2026-04-12',
       title: 'Hotfix — auth handshake',
       entries: [
-        { kind: 'fixed', text: 'Login attempts against realms with TLS 1.3-only auth no longer fail with "handshake refused".' },
+        { kind: 'fixed', text: 'Login attempts against realms with TLS 1.3-only auth no longer fail with “handshake refused”.' },
         { kind: 'fixed', text: 'Settings modal would not close on Escape if a tab transition was mid-animation.' },
       ],
     },
@@ -61,7 +61,7 @@
         { kind: 'added', text: 'Realm news feed pulled from operator-hosted JSON.' },
         { kind: 'added', text: 'Settings modal with Installation / Downloads / Profile tabs.' },
         { kind: 'changed', text: 'Play strip moved to bottom — progress bar replaces status text during sync.' },
-        { kind: 'removed', text: 'Legacy "Setup Card" panel — superseded by the setup-call in the news pane.' },
+        { kind: 'removed', text: 'Legacy “Setup Card” panel — superseded by the setup-call in the news pane.' },
       ],
     },
     {
@@ -74,7 +74,7 @@
         { kind: 'changed', text: 'Patch progress now reported as bytes-transferred rather than file-count, which gives a more honest ETA on mixed-size manifests where a handful of multi-gigabyte MPQs dominate total transfer time.' },
         { kind: 'fixed', text: 'Patcher would occasionally exit with status 0 while leaving the install in a partially-written state — temp files now atomically renamed on success and cleaned on failure.' },
         { kind: 'fixed', text: 'Tooltip clipping on the realm selector in the bottom-right corner when running at sub-1280px widths.' },
-        { kind: 'removed', text: 'Single-threaded "classic" downloader codepath behind the deprecated --legacy-patcher flag. The flag is now ignored with a console warning and will be removed entirely in 2.0.' },
+        { kind: 'removed', text: 'Single-threaded “classic” downloader codepath behind the deprecated --legacy-patcher flag. The flag is now ignored with a console warning and will be removed entirely in 2.0.' },
       ],
     },
     {
@@ -109,8 +109,24 @@
     },
   ];
 
-  function kindLabel(k: EntryKind): string {
-    return { added: 'Added', fixed: 'Fixed', changed: 'Changed', removed: 'Removed' }[k];
+  const KIND_ORDER: EntryKind[] = ['added', 'changed', 'fixed', 'removed'];
+  const KIND_LABEL: Record<EntryKind, string> = {
+    added: 'Added',
+    changed: 'Changed',
+    fixed: 'Fixed',
+    removed: 'Removed',
+  };
+
+  function groupByKind(entries: Entry[]): { kind: EntryKind; items: string[] }[] {
+    const buckets = new Map<EntryKind, string[]>();
+    for (const e of entries) {
+      const arr = buckets.get(e.kind) ?? [];
+      arr.push(e.text);
+      buckets.set(e.kind, arr);
+    }
+    return KIND_ORDER
+      .filter(k => buckets.has(k))
+      .map(k => ({ kind: k, items: buckets.get(k)! }));
   }
 </script>
 
@@ -133,14 +149,44 @@
         {#if r.title}
           <h3>{r.title}</h3>
         {/if}
-        <ul class="entries">
-          {#each r.entries as e}
-            <li class="entry">
-              <span class="kind kind-{e.kind}">{kindLabel(e.kind)}</span>
-              <span class="text">{e.text}</span>
-            </li>
+
+        <div class="groups">
+          {#each groupByKind(r.entries) as g}
+            <section class="group group-{g.kind}" aria-labelledby="g-{r.version}-{g.kind}">
+              <h4 class="group-head" id="g-{r.version}-{g.kind}">
+                <span class="ico" aria-hidden="true">
+                  {#if g.kind === 'added'}
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12h14"/><path d="M12 5v14"/>
+                    </svg>
+                  {:else if g.kind === 'fixed'}
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                  {:else if g.kind === 'changed'}
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                      <path d="M21 3v5h-5"/>
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                      <path d="M8 16H3v5"/>
+                    </svg>
+                  {:else}
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12h14"/>
+                    </svg>
+                  {/if}
+                </span>
+                <span class="group-label">{KIND_LABEL[g.kind]}</span>
+                <span class="group-count" aria-hidden="true">{g.items.length}</span>
+              </h4>
+              <ul class="entries">
+                {#each g.items as text}
+                  <li class="entry">{text}</li>
+                {/each}
+              </ul>
+            </section>
           {/each}
-        </ul>
+        </div>
       </li>
     {/each}
   </ol>
@@ -170,6 +216,7 @@
     letter-spacing: var(--tracking-tight);
     color: var(--fg-bright);
     line-height: 1.1;
+    text-wrap: balance;
   }
 
   .sample-note {
@@ -184,7 +231,7 @@
     background: transparent;
   }
 
-  .releases { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+  .releases { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-4); }
 
   .release {
     position: relative;
@@ -200,6 +247,13 @@
   .release:hover { border-color: var(--border-strong); }
   @keyframes rise {
     to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .release {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
   }
 
   .ver-row {
@@ -217,12 +271,14 @@
     background: var(--bg-raised);
     border-radius: var(--radius-sm);
     font-size: var(--fs-2xs);
+    font-variant-numeric: tabular-nums;
   }
   time {
     color: var(--fg-faint);
     font-style: normal;
     font-family: var(--font-mono);
     font-size: var(--fs-2xs);
+    font-variant-numeric: tabular-nums;
   }
 
   .release h3 {
@@ -235,33 +291,89 @@
     text-wrap: balance;
   }
 
-  .entries { list-style: none; padding: 0; margin: var(--space-2) 0 0; display: flex; flex-direction: column; gap: var(--space-2); }
+  .groups {
+    margin-top: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .group {
+    border-left: 2px solid var(--border-subtle);
+    padding-left: var(--space-4);
+  }
+  .group-added   { border-left-color: var(--c-green-400); }
+  .group-fixed   { border-left-color: var(--accent); }
+  .group-changed { border-left-color: var(--c-amber-400); }
+  .group-removed { border-left-color: var(--status-error); }
+
+  .group-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-heading);
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    letter-spacing: var(--tracking-wider);
+    text-transform: uppercase;
+    color: var(--fg-mute);
+    line-height: 1;
+  }
+  .ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+  }
+  .group-added   .ico { color: var(--c-green-400); background: color-mix(in srgb, var(--c-green-400) 12%, transparent); }
+  .group-fixed   .ico { color: var(--accent);      background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .group-changed .ico { color: var(--c-amber-400); background: color-mix(in srgb, var(--c-amber-400) 12%, transparent); }
+  .group-removed .ico { color: var(--status-error);background: color-mix(in srgb, var(--status-error) 12%, transparent); }
+
+  .group-added   .group-label { color: var(--c-green-400); }
+  .group-fixed   .group-label { color: var(--accent); }
+  .group-changed .group-label { color: var(--c-amber-400); }
+  .group-removed .group-label { color: var(--status-error); }
+
+  .group-count {
+    margin-left: auto;
+    color: var(--fg-faint);
+    font-family: var(--font-mono);
+    font-size: var(--fs-2xs);
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .entries {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
   .entry {
-    display: grid;
-    grid-template-columns: 80px 1fr;
-    gap: var(--space-3);
-    align-items: baseline;
+    position: relative;
+    padding-left: var(--space-3);
     color: var(--fg-default);
     font-size: var(--fs-sm);
     line-height: 1.55;
+    overflow-wrap: anywhere;
   }
-  .kind {
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-wider);
-    font-weight: 600;
-    font-size: var(--fs-2xs);
-    font-family: var(--font-heading);
-    padding: 0;
-    border-radius: 0;
-    border: 0;
-    background: transparent;
-    color: var(--fg-mute);
-    text-align: left;
+  .entry::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--fg-faint);
   }
-  .kind-added   { color: var(--c-green-400); }
-  .kind-fixed   { color: var(--accent); }
-  .kind-changed { color: var(--c-amber-400); }
-  .kind-removed { color: var(--status-error); }
-
-  .text { color: var(--fg-default); }
 </style>
