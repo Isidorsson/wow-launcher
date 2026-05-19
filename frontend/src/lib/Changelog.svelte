@@ -340,7 +340,6 @@
   .group-removed .group-label { color: var(--status-error); }
 
   .group-count {
-    margin-left: auto;
     color: var(--fg-faint);
     font-family: var(--font-mono);
     font-size: var(--fs-2xs);
