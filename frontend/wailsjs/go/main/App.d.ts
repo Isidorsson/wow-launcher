@@ -4,6 +4,8 @@ import {main} from '../models';
 import {news} from '../models';
 import {config} from '../models';
 
+export function BrowseForInstall():Promise<main.DetectedInstall>;
+
 export function CreateProfile(arg1:string,arg2:string):Promise<main.ProfileDTO>;
 
 export function DetectInstalls():Promise<Array<main.DetectedInstall>>;

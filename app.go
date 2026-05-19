@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"wow-launcher/internal/config"
 	"wow-launcher/internal/downloader"
@@ -101,6 +102,26 @@ func (a *App) ValidateInstall(path string) (*DetectedInstall, error) {
 	return &DetectedInstall{Root: inst.Root, Locale: inst.Locale}, nil
 }
 
+// BrowseForInstall opens a native folder picker and validates the chosen dir.
+// Returns nil (no error) if the user cancelled, an error if the chosen dir is
+// not a valid WoW install, or the validated install on success.
+func (a *App) BrowseForInstall() (*DetectedInstall, error) {
+	path, err := wruntime.OpenDirectoryDialog(a.ctx, wruntime.OpenDialogOptions{
+		Title: "Select your World of Warcraft install folder",
+	})
+	if err != nil {
+		return nil, err
+	}
+	if path == "" {
+		return nil, nil
+	}
+	inst, err := install.Validate(path)
+	if err != nil {
+		return nil, err
+	}
+	return &DetectedInstall{Root: inst.Root, Locale: inst.Locale}, nil
+}
+
 type ProfileDTO struct {
 	ServerID string `json:"serverId"`
 	Root     string `json:"root"`
@@ -170,29 +191,40 @@ func (a *App) FetchNews(serverID string) ([]news.Item, error) {
 // It finds a Wow.exe (or its parent dir) in paths and emits a "drop:install"
 // event with the validated install info, or "drop:error" on failure.
 func (a *App) HandleDroppedPaths(paths []string) {
+	var lastValidationErr error
+	sawExe := false
 	for _, p := range paths {
-		// If user dropped Wow.exe directly, use its parent dir.
-		// If they dropped the install folder, use it as-is.
 		candidate := p
 		info, err := os.Stat(p)
 		if err != nil {
 			continue
 		}
 		if !info.IsDir() {
-			if filepath.Base(p) != "Wow.exe" && filepath.Base(p) != "wow.exe" {
+			if !strings.EqualFold(filepath.Base(p), "Wow.exe") {
 				continue
 			}
+			sawExe = true
 			candidate = filepath.Dir(p)
 		}
 		inst, err := install.Validate(candidate)
 		if err != nil {
-			events.Emit(a.ctx, "drop:error", err.Error())
+			lastValidationErr = err
 			continue
 		}
 		events.Emit(a.ctx, "drop:install", DetectedInstall{Root: inst.Root, Locale: inst.Locale})
 		return
 	}
-	events.Emit(a.ctx, "drop:error", "No valid WoW install in dropped items. Drop Wow.exe or the folder containing it.")
+	switch {
+	case lastValidationErr != nil && sawExe:
+		events.Emit(a.ctx, "drop:error",
+			"Wow.exe found, but its folder is not a full install (missing Data/<locale>/...). "+
+				"Use Browse to pick the full WoW folder, or drop the folder itself.")
+	case lastValidationErr != nil:
+		events.Emit(a.ctx, "drop:error", lastValidationErr.Error())
+	default:
+		events.Emit(a.ctx, "drop:error",
+			"No Wow.exe in dropped items. Drop Wow.exe, the install folder, or use Browse.")
+	}
 }
 
 func (a *App) Play(serverID string) error {

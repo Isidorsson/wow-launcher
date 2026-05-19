@@ -1,6 +1,7 @@
 <script lang="ts">
   import {
-    DetectInstalls, GetProfile, ValidateInstall, CreateProfile, SyncServer
+    DetectInstalls, GetProfile, ValidateInstall, CreateProfile, SyncServer,
+    BrowseForInstall
   } from '../../wailsjs/go/main/App';
   import {
     detectedInstalls, selectedServerId, servers, includeOptional,
@@ -70,6 +71,22 @@
     }
   }
 
+  async function browseForInstall() {
+    try {
+      const inst = await BrowseForInstall();
+      if (!inst) return;
+      detectedInstalls.update(list => {
+        if (list.some(i => i.root === inst.root)) return list;
+        return [...list, inst];
+      });
+      chosenBase = inst.root;
+      manualPath = inst.root;
+      errorMsg.set('');
+    } catch (e: any) {
+      errorMsg.set(`Invalid install: ${e?.message ?? e}`);
+    }
+  }
+
   async function install() {
     if (!chosenBase || !srv) return;
     phase.set('syncing');
@@ -132,9 +149,7 @@
         {#if tab === 'installation'}
           <section>
             <h3>Forge a new installation</h3>
-            <p class="hint">
-              Drop <code>Wow.exe</code> anywhere on the launcher, or pick a detected install.
-            </p>
+            <p class="hint">Choose your World of Warcraft folder — three ways to do it.</p>
 
             {#if $detectedInstalls.length > 0}
               <label for="detected-select">Detected installs</label>
@@ -143,16 +158,34 @@
                   <option value={inst.root}>{inst.root} — {inst.locale}</option>
                 {/each}
               </select>
-            {:else}
-              <p class="muted small">No installs detected automatically. Drop <code>Wow.exe</code> on the window or enter a path below.</p>
+              <div class="row tight">
+                <button class="ghost small" onclick={rescan}>Rescan disks</button>
+              </div>
             {/if}
+
+            <label for="browse-row">Pick folder</label>
+            <div id="browse-row" class="row">
+              <button class="ghost" onclick={browseForInstall}>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+                Browse for WoW folder…
+              </button>
+            </div>
 
             <label for="manual-input">Or enter path manually</label>
             <div class="row">
               <input id="manual-input" type="text" bind:value={manualPath} placeholder="C:\WoW 3.3.5a" />
               <button class="ghost" onclick={validateManual}>Validate</button>
-              <button class="ghost" onclick={rescan}>Rescan</button>
             </div>
+
+            <p class="muted small dropzone-hint">
+              Or drop <code>Wow.exe</code> (or the folder containing it) anywhere on the launcher window.
+            </p>
+
+            {#if $errorMsg}
+              <div class="inline-error" role="alert">{$errorMsg}</div>
+            {/if}
 
             <button
               class="primary"
@@ -326,6 +359,27 @@
 
   .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
   .row input { flex: 1; min-width: 12rem; }
+  .row.tight { margin-top: -0.25rem; }
+  button.small { font-size: 0.78rem; padding: 0.35rem 0.65rem; }
+
+  .dropzone-hint {
+    margin-top: 0.4rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px dashed var(--border-default);
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .inline-error {
+    margin-top: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--status-error);
+    border-radius: var(--radius-sm);
+    background: rgba(220, 38, 38, 0.08);
+    color: var(--status-error);
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
 
   code {
     background: rgba(0,0,0,0.5); padding: 0.1rem 0.4rem; border-radius: 2px;

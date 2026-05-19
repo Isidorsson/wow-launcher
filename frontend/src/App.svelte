@@ -50,6 +50,13 @@
   }
 
   onMount(async () => {
+    // Block WebView/browser default file-drop (otherwise dropping Wow.exe
+    // triggers a navigation/download instead of firing OnFileDrop in Go).
+    const preventDefault = (e: DragEvent) => e.preventDefault();
+    window.addEventListener('dragenter', preventDefault);
+    window.addEventListener('dragover', preventDefault);
+    window.addEventListener('drop', preventDefault);
+
     const b = await GetBranding();
     launcherName = b.launcherName;
     const list = await GetServers();
