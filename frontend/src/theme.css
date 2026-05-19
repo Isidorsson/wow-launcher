@@ -1,0 +1,119 @@
+/* ============================================================
+   THEME — edit primitives below to reskin entire launcher.
+   Two tiers:
+     1. PRIMITIVES (--c-*, --font-*, --space-*, --radius-*)
+        Raw values. Change these for full theme swap.
+     2. SEMANTICS (--bg-*, --fg-*, --border-*, --accent-*)
+        Reference primitives. Components use these only.
+   ============================================================ */
+
+:root {
+  /* ---------- PRIMITIVES ---------- */
+
+  /* Palette — Arcane (deep navy + arcane blue) */
+  --c-ink-900:   #03050b;
+  --c-ink-800:   #060912;
+  --c-ink-700:   #0b1020;
+  --c-ink-600:   #131a30;
+  --c-ink-500:   #1c2746;
+  --c-ink-400:   #2a365a;
+  --c-ink-300:   #3e4f80;
+
+  --c-blue-900:  #0d3b78;
+  --c-blue-700:  #1e60b8;
+  --c-blue-500:  #4ea4ff;
+  --c-blue-300:  #8fcdff;
+  --c-blue-100:  #d8ecff;
+
+  --c-cyan-400:  #67e8f9;
+  --c-green-400: #4ade80;
+  --c-green-200: #86efac;
+  --c-red-500:   #ef4444;
+  --c-red-200:   #fca5a5;
+  --c-amber-400: #f5c870;
+  --c-violet-400:#a78bfa;
+
+  --c-white:     #ffffff;
+  --c-text-100:  #e6edf7;
+  --c-text-300:  #b5c0d6;
+  --c-text-500:  #74809a;
+
+  /* Type scale */
+  --font-display: 'Cinzel', 'Trajan Pro', serif;
+  --font-script:  'Marcellus', Georgia, serif;
+  --font-body:    -apple-system, 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Consolas', monospace;
+
+  --fs-xs:   0.72rem;
+  --fs-sm:   0.82rem;
+  --fs-base: 0.94rem;
+  --fs-md:   1.02rem;
+  --fs-lg:   1.18rem;
+  --fs-xl:   1.4rem;
+
+  /* Spacing scale (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* Radius */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 420ms;
+
+  /* Elevation */
+  --shadow-sm: 0 2px 6px rgba(0,0,0,0.35);
+  --shadow-md: 0 6px 18px rgba(0,0,0,0.5);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.7);
+  --shadow-rim: inset 0 1px 0 rgba(180,220,255,0.06);
+
+
+  /* ---------- SEMANTICS ---------- */
+
+  /* Surfaces */
+  --bg-app:     var(--c-ink-900);
+  --bg-surface: var(--c-ink-700);
+  --bg-raised:  var(--c-ink-600);
+  --bg-sunken:  var(--c-ink-800);
+  --bg-hover:   rgba(78, 164, 255, 0.08);
+  --bg-active:  rgba(78, 164, 255, 0.14);
+
+  /* Text */
+  --fg-default: var(--c-text-100);
+  --fg-soft:    var(--c-text-300);
+  --fg-mute:    var(--c-text-500);
+  --fg-bright:  var(--c-white);
+  --fg-on-accent: var(--c-ink-900);
+
+  /* Borders */
+  --border-subtle: var(--c-ink-400);
+  --border-default: var(--c-ink-300);
+  --border-strong: var(--c-blue-500);
+
+  /* Accent — Arcane Blue */
+  --accent:        var(--c-blue-500);
+  --accent-soft:   var(--c-blue-300);
+  --accent-bright: var(--c-blue-100);
+  --accent-deep:   var(--c-blue-700);
+  --accent-glow:   rgba(78, 164, 255, 0.45);
+
+  /* Status */
+  --status-success: var(--c-green-200);
+  --status-error:   var(--c-red-200);
+  --status-warn:    var(--c-amber-400);
+  --status-info:    var(--c-cyan-400);
+
+  /* Focus ring (WCAG 2.4.7) */
+  --focus-ring: 0 0 0 2px var(--bg-app), 0 0 0 4px var(--accent);
+}

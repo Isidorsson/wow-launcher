@@ -3,12 +3,48 @@
   import type { news } from '../../wailsjs/go/models';
   import { selectedServerId, servers } from '../stores';
 
-  let items: news.Item[] = [];
-  let loading = false;
-  let error = '';
+  let items = $state<news.Item[]>([]);
+  let loading = $state(false);
+  let error = $state('');
 
-  $: srv = $servers.find(s => s.id === $selectedServerId);
-  $: if ($selectedServerId) load();
+  const srv = $derived($servers.find(s => s.id === $selectedServerId));
+
+  const placeholder: news.Item[] = [
+    {
+      title: 'Patch 3.3.5a — Fall of the Lich King',
+      date: '2026-05-12',
+      body: 'The Frozen Throne stands shattered. New seasonal affixes rotate weekly across Icecrown Citadel. Loot tables rebalanced; Shadowmourne quest chain re-enabled for the second wave of champions.',
+      url: 'https://example.invalid/patch-3-3-5a',
+      category: 'patch',
+    },
+    {
+      title: 'Hallow\'s End returns to Azeroth',
+      date: '2026-05-08',
+      body: 'The Headless Horseman rides once more from Scarlet Monastery. Daily candy buckets, wickerman bonfires across capital cities, and limited-time toy drops are live until the 22nd.',
+      url: 'https://example.invalid/hallows-end',
+      category: 'event',
+    },
+    {
+      title: 'Realm restart Thursday 04:00 server time',
+      date: '2026-05-05',
+      body: 'Scheduled hardware swap on the auth shard. Expected downtime ~30 minutes. Active characters will be safely logged out beforehand. Vendor refund window extended by 2 hours after restart.',
+      category: 'news',
+    },
+    {
+      title: 'Cross-faction battlegrounds — beta opt-in',
+      date: '2026-04-29',
+      body: 'Premade groups can now queue mixed Horde/Alliance compositions in random BG rotation. Rated arenas unaffected. Feedback thread pinned on the forums.',
+      url: 'https://example.invalid/xfaction-bg',
+      category: 'news',
+    },
+  ];
+
+  const displayItems = $derived(items.length > 0 ? items : placeholder);
+  const isPlaceholder = $derived(items.length === 0 && !loading && !error);
+
+  $effect(() => {
+    if ($selectedServerId) load();
+  });
 
   async function load() {
     if (!$selectedServerId) return;
@@ -34,26 +70,28 @@
 <section class="news">
   <header>
     <h2>{srv?.name ?? 'News'}</h2>
-    <button class="refresh" on:click={load} disabled={loading} title="Refresh">↻</button>
+    <button class="refresh" onclick={load} disabled={loading} title="Refresh" aria-label="Refresh news">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-3-6.7"/>
+        <polyline points="21 4 21 9 16 9"/>
+      </svg>
+    </button>
   </header>
 
-  {#if !srv?.newsFeedUrl}
-    <div class="empty">
-      <p>No news feed configured for this realm.</p>
-    </div>
-  {:else if loading}
-    <div class="empty"><p>Loading…</p></div>
+  {#if loading}
+    <div class="empty"><p>Consulting the seers…</p></div>
   {:else if error}
     <div class="empty error">
-      <p>Failed to load news:</p>
+      <p>The ravens return with ill tidings:</p>
       <pre>{error}</pre>
     </div>
-  {:else if items.length === 0}
-    <div class="empty"><p>No news yet.</p></div>
   {:else}
+    {#if isPlaceholder}
+      <div class="sample-note">Sample data — no live feed configured.</div>
+    {/if}
     <ul class="items">
-      {#each items as item}
-        <article class="item">
+      {#each displayItems as item, i}
+        <article class="item" style="animation-delay: {i * 60}ms;">
           <div class="meta">
             {#if item.category}
               <span class={categoryClass(item.category)}>{item.category}</span>
@@ -63,7 +101,7 @@
           <h3>{item.title}</h3>
           <p class="body">{item.body}</p>
           {#if item.url}
-            <a href={item.url} target="_blank" rel="noopener">Read more →</a>
+            <a href={item.url} target="_blank" rel="noopener">Read the full scroll →</a>
           {/if}
         </article>
       {/each}
@@ -72,38 +110,158 @@
 </section>
 
 <style>
-  .news { flex: 1; padding: 1.25rem 1.75rem; overflow-y: auto; }
-  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  header h2 { margin: 0; font-size: 1.25rem; color: #fff; }
+  .news { padding: 0; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: var(--space-4);
+  }
+  header h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--fs-lg);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-bright);
+  }
+
   .refresh {
-    background: transparent; border: 1px solid #2a2a33; color: #aaa;
-    width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
-    font-size: 1rem; line-height: 1;
+    background: transparent;
+    border: 1px solid var(--rune-line);
+    color: var(--text-soft);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 180ms ease;
   }
-  .refresh:hover:not(:disabled) { background: #1f1f27; color: #c9a227; }
-  .refresh:disabled { opacity: 0.4; cursor: not-allowed; }
+  .refresh:hover:not(:disabled) {
+    border-color: var(--gold);
+    color: var(--gold-bright);
+    transform: rotate(-90deg);
+  }
+  .refresh:disabled { opacity: 0.35; cursor: not-allowed; }
 
-  .empty { padding: 2rem; text-align: center; color: #777; }
+  .empty {
+    padding: 2.25rem 1.5rem;
+    text-align: center;
+    color: var(--text-mute);
+    font-style: italic;
+    font-family: var(--font-script);
+    font-size: 1rem;
+  }
   .empty.error pre {
-    background: #1f1f27; padding: 0.75rem; border-radius: 4px;
-    color: #ff9c9c; font-size: 0.8rem; text-align: left; white-space: pre-wrap;
+    background: rgba(192, 57, 43, 0.08);
+    padding: 0.85rem 1rem;
+    border-radius: 2px;
+    border: 1px solid rgba(192, 57, 43, 0.4);
+    color: var(--blood-glow);
+    font-family: 'Consolas', monospace;
+    font-size: 0.82rem;
+    text-align: left;
+    white-space: pre-wrap;
+    margin: 0.6rem 0 0;
+    font-style: normal;
   }
 
-  .items { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .sample-note {
+    font-family: var(--font-script);
+    font-style: italic;
+    font-size: 0.78rem;
+    color: var(--text-mute);
+    text-align: center;
+    padding: 0.3rem 0.6rem;
+    margin-bottom: 0.75rem;
+    border: 1px dashed var(--rune-line);
+    border-radius: 2px;
+    background: rgba(0,0,0,0.25);
+  }
+
+  .items { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+
   .item {
-    background: #15151a; border: 1px solid #1f1f27; border-radius: 8px;
-    padding: 1rem 1.25rem;
+    position: relative;
+    background:
+      linear-gradient(180deg, rgba(19, 26, 48, 0.6), rgba(8, 11, 20, 0.78));
+    border: 1px solid var(--rune-line);
+    padding: 1rem 1.25rem 1.05rem;
+    border-radius: 2px;
+    box-shadow:
+      inset 0 1px 0 rgba(143, 205, 255, 0.04),
+      0 4px 14px rgba(0,0,0,0.35);
+    opacity: 0;
+    transform: translateY(8px);
+    animation: rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    transition: border-color 180ms, box-shadow 180ms;
   }
-  .item h3 { margin: 0.25rem 0 0.5rem; color: #fff; font-size: 1.05rem; }
-  .meta { display: flex; gap: 0.6rem; align-items: center; font-size: 0.75rem; color: #888; }
+  .item::before {
+    /* left gilt rule */
+    content: '';
+    position: absolute; left: 0; top: 8px; bottom: 8px;
+    width: 2px;
+    background: linear-gradient(180deg, transparent, var(--gold), transparent);
+    opacity: 0.5;
+  }
+  .item:hover {
+    border-color: var(--rune-line-2);
+    box-shadow:
+      inset 0 1px 0 rgba(143, 205, 255, 0.08),
+      0 6px 22px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(78, 164, 255, 0.15);
+  }
+  @keyframes rise {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .item h3 {
+    margin: 0.4rem 0 0.55rem;
+    color: var(--text-bright);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: 0.06em;
+  }
+  .meta {
+    display: flex; gap: 0.6rem; align-items: center;
+    font-size: 0.72rem;
+    color: var(--text-mute);
+    font-family: var(--font-ui);
+  }
   .cat {
-    padding: 0.1rem 0.5rem; border-radius: 10px; background: #2a2a33;
-    text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+    padding: 0.15rem 0.55rem;
+    border-radius: 2px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--rune-line);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    font-size: 0.66rem;
+    color: var(--text-soft);
   }
-  .cat-patch  { background: #2d2310; color: #c9a227; }
-  .cat-event  { background: #112d12; color: #6cd06c; }
-  .cat-news   { background: #11202d; color: #6caac9; }
-  .body { color: #c5c5c5; line-height: 1.5; margin: 0.25rem 0 0.5rem; white-space: pre-wrap; }
-  a { color: #c9a227; font-size: 0.85rem; text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  .cat-patch  { color: var(--gold-bright); border-color: rgba(78, 164, 255, 0.5); background: rgba(78, 164, 255, 0.1); }
+  .cat-event  { color: var(--fel-glow);    border-color: rgba(76, 175, 80, 0.4);  background: rgba(76, 175, 80, 0.08); }
+  .cat-news   { color: var(--arcane);      border-color: rgba(106, 169, 216, 0.4); background: rgba(106, 169, 216, 0.08); }
+
+  time { font-style: italic; }
+
+  .body {
+    color: var(--text);
+    line-height: 1.6;
+    margin: 0.25rem 0 0.6rem;
+    white-space: pre-wrap;
+    font-size: 0.96rem;
+  }
+  a {
+    color: var(--gold-bright);
+    font-family: var(--font-display);
+    font-size: 0.74rem;
+    text-decoration: none;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: color 150ms, text-shadow 150ms;
+  }
+  a:hover {
+    color: var(--gold-flash);
+    text-shadow: 0 0 10px rgba(143, 205, 255, 0.5);
+  }
 </style>
