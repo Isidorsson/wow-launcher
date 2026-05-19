@@ -3,6 +3,22 @@
 Wails-based launcher for WoW 3.3.5a private servers.
 Open source — fork it, edit `config.toml`, host a signed manifest, ship.
 
+## Screenshots
+
+Work-in-progress UI on the Demo Realm:
+
+| News & realm hero                | Patch notes                       |
+|----------------------------------|-----------------------------------|
+| ![News](docs/screenshots/01-main.png) | ![Patch Notes](docs/screenshots/02-patch-notes.png) |
+
+| Shop (placeholder)               | Connect (community panels)        |
+|----------------------------------|-----------------------------------|
+| ![Shop](docs/screenshots/03-shop.png) | ![Connect](docs/screenshots/04-connect.png) |
+
+Settings → install picker (browse, paste path, or drop `Wow.exe`):
+
+![Settings](docs/screenshots/05-settings.png)
+
 ## Features
 
 - Multi-server: one launcher, dropdown to switch realms.
@@ -74,4 +90,4 @@ Not yet implemented (good next-session work):
 
 ## License
 
-MIT — pick a license file to include before publishing.
+MIT
